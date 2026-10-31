@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#070810" />
     <meta
       name="description"
-      content="Draft CoinDash privacy and storage information."
+      content="How CoinDash collects, uses, stores, and shares personal information."
     />
     <title>Privacy Policy | CoinDash</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -26,18 +26,17 @@
     <main class="legal-page">
       <p class="legal-eyebrow">CoinDash policies</p>
       <h1>Privacy Policy</h1>
-      <p class="legal-updated">Last updated: 15 October 2026</p>
+      <p class="legal-updated">Last updated: 31 October 2026</p>
       <p class="legal-draft-notice" role="note">
-        <strong>Draft for review.</strong> This page describes behavior found in
-        the current application. Retention schedules, production email delivery,
-        external service processing locations, and the legal requirements for
-        serving users internationally still need to be confirmed. Complete
-        those details and obtain appropriate privacy/legal review before
-        production use.
+        <strong>Important:</strong> This notice describes CoinDash as currently
+        implemented. Before a production launch, the operator should confirm
+        hosting, backup, provider, retention, and international-transfer
+        arrangements and obtain legal advice appropriate to the places where
+        CoinDash is offered.
       </p>
 
       <p>
-        This draft explains how CoinDash handles information when you browse
+        This Privacy Policy explains how CoinDash handles information when you browse
         its cryptocurrency market dashboard, create an account, save a
         watchlist, configure alerts, or use account settings. Cookie consent and
         acceptance of the Terms of Use are separate decisions; choosing cookie
@@ -47,7 +46,7 @@
       <section aria-labelledby="privacy-operator">
         <h2 id="privacy-operator">Who operates CoinDash?</h2>
         <p>
-          CoinDash is operated by Obikwelu Michael from Nigeria and is
+          CoinDash is independently operated by Obikwelu Michael from Nigeria and is
           intended for users aged 18 and over worldwide, where use is lawful.
           It is an independently operated cryptocurrency dashboard for general
           personal information and does not provide professional investment
@@ -62,8 +61,9 @@
       <section aria-labelledby="privacy-law">
         <h2 id="privacy-law">Applicable privacy law</h2>
         <p>
-          CoinDash operates from Nigeria, where the Nigeria Data Protection
-          Act, 2023 governs applicable processing of personal data. Other
+          CoinDash operates from Nigeria, where the
+          <a href="https://ndpc.gov.ng/download/nigeria-data-protection-act-2023" target="_blank" rel="noopener noreferrer">Nigeria Data Protection Act, 2023</a>
+          governs applicable processing of personal data. Other
           privacy laws may also apply to our activities involving users in
           other countries. The service's informational purpose does not remove
           applicable privacy obligations or your statutory rights.
@@ -98,7 +98,10 @@
           client network address in memory to restrict repeated authentication
           and account actions. The application does not currently write IP
           addresses or browser-agent strings to its user database and does not
-          run a dedicated web access-log middleware. Application errors may be
+          run a dedicated web access-log middleware. On a successful sign-in,
+          CoinDash prepares a security-notification email containing the sign-in
+          time, IP address, and a simplified device/browser description; those
+          details are not saved in the CoinDash user database. Application errors may be
           written to server logs. Hosting, database, email, and network
           providers may maintain their own technical logs; their exact fields
           and retention periods must be confirmed with those providers.
@@ -198,9 +201,15 @@
             >
             is the application's email integration. When email delivery is
             configured, it processes recipient email addresses and message
-            content for verification, password resets, and requested market
-            alerts. Production configuration and successful delivery still need
-            to be verified.
+            content for verification, password resets, sign-in notifications,
+            welcome messages, and requested market alerts.
+          </li>
+          <li>
+            <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer">Telegram</a>
+            is used only when you choose to link a Telegram account and enable
+            Telegram alerts. CoinDash stores the linked Telegram chat ID, user
+            ID, and, when available, username. Telegram receives the alert
+            message and destination chat ID needed to deliver that alert.
           </li>
           <li>
             Google Fonts and the unpkg CDN are contacted by the browser to load
@@ -229,12 +238,14 @@
           rows and invalidates stored sessions. Session rows expire according to
           their expiry timestamp; password-reset links expire after 30 minutes
           and verification links after 24 hours. The code marks token rows used,
-          but does not define a complete cleanup or backup-retention schedule.
+          and related one-time tokens cannot be used again after expiry or use.
         </p>
         <p>
-          Application, infrastructure, email-provider, and backup retention
-          periods have not been configured in this project. The operator must
-          document those periods and any deletion delays before publication.
+          Account deletion does not necessarily remove data immediately from
+          provider systems or backups. Retention for application logs,
+          infrastructure records, provider records, and backups depends on the
+          applicable provider and backup-rotation configuration. The operator
+          will update this notice when those periods are defined.
         </p>
       </section>
 
@@ -268,6 +279,9 @@
           portability, or to object to certain processing or complain to a
           regulator. To make a privacy request, contact
           <a href="mailto:Saintdevopz@gmail.com">Saintdevopz@gmail.com</a>.
+          We may need enough information to verify your identity and aim to
+          respond within 30 days, subject to applicable law and any permitted
+          extension.
           You may also lodge a complaint with the
           <a href="https://ndpc.gov.ng/" target="_blank" rel="noopener noreferrer"
             >Nigeria Data Protection Commission</a
@@ -306,10 +320,9 @@
       <section aria-labelledby="privacy-updates">
         <h2 id="privacy-updates">Policy updates</h2>
         <p>
-          The “Last updated” date will change when this page is revised. The
-          application has no dedicated privacy-policy change notification
-          workflow; the operator should establish an appropriate notice process
-          for material changes where required.
+          The “Last updated” date will change when this page is revised. For
+          material changes, CoinDash may provide notice through the service,
+          by email where appropriate, or by another method required by law.
         </p>
       </section>
     </main>

@@ -1,61 +1,131 @@
 # CoinDash
 
-Telegram staging deployment and operational checks are documented in
-[docs/telegram-staging-runbook.md](docs/telegram-staging-runbook.md).
+CoinDash is a full-stack cryptocurrency market dashboard. It provides live market views, interactive charts, trending assets and news, alongside secure accounts, saved watchlists, price alerts, and optional Telegram notifications.
 
-## Authentication and PostgreSQL setup
+## Features
 
-Use Node.js 24.15.0 or newer. CoinDash uses PostgreSQL for accounts, server-side sessions, user preferences, and user-owned watchlist rows. Market data, charts, and WebSockets remain independent of the account database.
+- Live cryptocurrency market data, market sentiment, price charts, trending assets, and crypto news.
+- Personal watchlists and market alerts stored per account.
+- Secure account registration and sign-in with PostgreSQL-backed sessions.
+- Password recovery, email verification, password changes, and optional two-factor authentication (TOTP with recovery codes).
+- In-app, email, and optional Telegram alert delivery.
+- Automatic Telegram market-feed alerts for notable price moves, volume spikes, and range breakouts.
+- Responsive pages for Markets, Trending, Watchlist, News, Signals, and Account Settings.
 
-1. Install dependencies: `npm install`.
-2. Create a PostgreSQL database and a database user, for example: `createdb cryptodash`.
-3. Copy `.env.example` to `.env`, then set `DATABASE_URL` and a long random `SESSION_SECRET`. Keep `.env` private.
-4. Run the schema migrations: `npm run migrate:up`.
-5. Start the app: `npm run dev` (or `npm start`).
-6. Open `http://localhost:3000/signup`, create an account, and confirm that `GET /api/auth/me` returns the safe user object. Sign out and confirm it returns `401` and `/api/watchlist` returns `401`.
+## Tech stack
 
-## Password recovery and email verification
+- Node.js and Express
+- PostgreSQL with `node-postgres` and `node-pg-migrate`
+- Vanilla JavaScript, HTML, and CSS
+- WebSockets for live market updates
+- Argon2id password hashing, server-side sessions, and TOTP two-factor authentication
+- CoinGecko market data, Brevo transactional email, and the Telegram Bot API
 
-Configure `BREVO_API_KEY`, `EMAIL_FROM_NAME`, and `EMAIL_FROM_EMAIL` in `.env`, and set `APP_BASE_URL` to the exact public origin (HTTPS in production). `EMAIL_FROM_EMAIL` must exactly match a sender registered and verified in Brevo. Recovery, verification, welcome, and alert email is sent through Brevo's transactional email API and is never simulated. The reset request always responds with the same generic message to avoid disclosing whether an address has an account.
+## Requirements
 
-Run `npm run migrate:up` after pulling schema changes. Migration `002_auth_email_tokens` adds nullable `users.email_verified_at` plus separate hashed, expiring, single-use token tables. A reset token expires after 30 minutes; a verification token expires after 24 hours. A password reset updates the password and deletes all stored sessions for that user in one transaction. Verification is optional for current CoinDash features: an unverified user can still sign in and use the watchlist, and becomes verified only after completing the emailed link.
+- Node.js 24.15.0 or newer
+- PostgreSQL
+- npm
 
-Pages: `/forgot-password`, `/reset-password?token=…`, and `/verify-email?token=…`. Verification links can be re-sent from the account menu. Auth/recovery/verification requests have rate limits.
+## Local setup
 
-## Advanced account features
+1. Clone the repository and enter the project folder.
 
-Run `npm run migrate:up` to apply `003_advanced_account_features`. It adds encrypted TOTP enrollment state, one-use recovery-code hashes, short-lived login challenges, persistent per-user notifications, market alerts, and a JSON notification-preference field. Install dependencies with `npm install`; TOTP follows RFC 6238 through `otplib`, with QR rendering by `qrcode`.
+   ```sh
+   git clone https://github.com/Obikwelumichael/CoinDash.git
+   cd CoinDash
+   ```
 
-Set `TOTP_ENCRYPTION_KEY` to a base64-encoded 32-byte random key before enabling 2FA. Keep the key in a secret manager, back it up separately from PostgreSQL, and do not rotate it without a planned re-encryption process; existing encrypted authenticator secrets cannot be decrypted without it. The authenticator code is verified before 2FA is activated. Login returns a short-lived, one-use challenge after a correct password; five failures invalidate the challenge. Ten high-entropy recovery codes are displayed only once and are stored as hashes.
+2. Install dependencies.
 
-Authenticated APIs are mounted under `/api/account`, `/api/notifications`, and `/api/alerts`. Notifications and alert ownership are always derived from the verified session. Alert evaluation runs once per minute against the existing shared market cache and only refreshes that cache when it is stale; no CoinGecko request is created per alert. Each alert triggers once while its condition is met and rearms only after the condition clears. Each account is limited to 20 alerts. Email alerts are optional (`emailAlerts` preference) and use the shared Brevo configuration. In-app notification history remains persisted.
+   ```sh
+   npm install
+   ```
 
-## Automatic Telegram market feed
+3. Create the PostgreSQL role and database. Choose a strong password; use letters and numbers to avoid URL-encoding it in the connection string.
 
-Migrations `007_automatic_market_feed` and `008_adaptive_market_feed` add normalized top-100 market observations, persistent normal/major detector state, logical signal events, and a nullable event reference on notifications. Every genuinely fresh cache update is evaluated promptly, while the existing alert scheduler remains the bounded fallback. The implementation does not add CoinGecko requests: it reuses the existing cache refresh, notification outbox, Telegram queue, and Telegram worker.
+   ```sh
+   sudo -u postgres psql
+   ```
 
-Balanced defaults are a 1.5% move over a preferred five-minute comparison, rolling 24-hour provider volume at 2× the median of at least six recent observations, and a 0.5% break beyond the prior one-hour observed range with at least six observations. Existing refresh paths produce snapshots roughly every one to five minutes depending on active WebSocket traffic, API cache use, and fallback evaluation, so the detector accepts only a bounded three-minute-old comparison around the five-minute target. It never creates a fetch merely to fill that window.
+   ```sql
+   CREATE USER cryptodash_user WITH PASSWORD 'choose-a-strong-password';
+   CREATE DATABASE cryptodash OWNER cryptodash_user;
+   \q
+   ```
 
-Normal signals use a ten-minute cooldown. Major signals are separately classified at a 3% five-minute price move, 4× volume, or a 1.5% range breakout with 2× volume confirmation when a reliable volume baseline is available. A normal condition escalating to major can bypass the normal cooldown once; major state and a separate two-minute emergency cooldown prevent repeat overrides. At most five new global signals are admitted per scan. The Telegram worker additionally reserves no more than 20 market-feed deliveries globally and five per user in a rolling ten-minute window, prioritizing major events while leaving excess jobs durably queued. Queued automatic signals expire after 20 minutes; disabling a category cancels that category's queued/retry deliveries. Older preference rows remain opted out until the user enables each category on `/signals`.
+4. Create your local environment file.
 
-All normal, major, cooldown, TTL, and delivery-rate values are configurable through the `MARKET_FEED_*` variables documented in `.env.example`. Market observations are CoinGecko USD snapshots: `current_price`, `total_volume` (rolling 24-hour USD volume), `market_cap`, and `market_cap_rank`. Missing, stale, malformed, duplicate, and non-finite values are not treated as observations.
+   ```sh
+   cp .env.example .env
+   ```
 
-The `/settings` page supports profile name, existing theme preference, email-alert preference, password change, TOTP management, market alerts, notifications, and account deletion. Password change, 2FA disable, and account deletion require the current password; when 2FA is active they also require an authenticator or recovery code. Deletion permanently cascades the user's watchlist, preferences, alerts, notifications, tokens, and security records and invalidates sessions.
+5. In `.env`, set the connection string and session secret.
 
-Generate a session secret with:
+   ```env
+   DATABASE_URL=postgresql://cryptodash_user:choose-a-strong-password@localhost:5432/cryptodash
+   SESSION_SECRET=replace-with-a-long-random-secret
+   ```
+
+   Generate a session secret with:
+
+   ```sh
+   node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+   ```
+
+   Keep `.env` private. Never commit passwords, API keys, session secrets, or Telegram tokens.
+
+6. Run the database migrations.
+
+   ```sh
+   npm run migrate:up
+   ```
+
+7. Start the development server.
+
+   ```sh
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000), then create an account at `/signup`.
+
+## Scripts
 
 ```sh
-node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+npm run dev          # Start the development server with Nodemon
+npm start            # Start the production server
+npm run migrate:up   # Apply PostgreSQL migrations
+npm run migrate:down # Revert the most recent migration
+npm test             # Run the automated test suite
 ```
 
-The migration creates these tables:
+## Configuration
 
-- `users`: UUID identity, normalized unique email, Argon2id password hash, display name, and timestamps.
-- `watchlist`: UUID row with a foreign key to `users`, `coin_id`, timestamp, and a unique `(user_id, coin_id)` constraint.
-- `user_preferences`: one optional minimal preferences row per user.
-- `session`: PostgreSQL-backed Express session records with an expiry index.
-- `password_reset_tokens` and `email_verification_tokens`: one-time token hashes with expiry and usage timestamps; raw tokens are only delivered to the user's email.
+`DATABASE_URL` and `SESSION_SECRET` are required. The remaining values in `.env.example` support optional integrations:
 
-Authentication uses an opaque `HttpOnly`, same-site session cookie. The browser never receives a password hash, session ID, or a user ID to authorize requests. `requireAuth` reloads the user from the session on every protected request, and watchlist queries always use that server-resolved user ID. There is intentionally no cross-origin CORS policy: CoinDash's API is same-origin by default.
+- `BREVO_API_KEY`, `EMAIL_FROM_NAME`, and `EMAIL_FROM_EMAIL` enable verification, password-reset, welcome, and email-alert messages. The sender address must be verified in Brevo.
+- `TOTP_ENCRYPTION_KEY` is required before enabling two-factor authentication. Use a base64-encoded 32-byte secret and store it safely; existing TOTP secrets cannot be decrypted without it.
+- `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, and `TELEGRAM_WEBHOOK_SECRET` enable Telegram account linking and alerts.
+- `COINGECKO_API_KEY` and `FREECRYPTO_API_KEY` configure the supported market-data providers when needed.
 
-For production, set `NODE_ENV=production`, serve the app over HTTPS, use a managed PostgreSQL TLS connection if required (`DATABASE_SSL=true`), and set `APP_BASE_URL` to the public HTTPS URL.
+For production, use HTTPS, set `NODE_ENV=production`, set `APP_BASE_URL` to the public HTTPS URL, and set `DATABASE_SSL=true` when your PostgreSQL provider requires TLS.
+
+## Security and account behaviour
+
+Passwords are stored with Argon2id. Authentication uses opaque, `HttpOnly`, same-site cookies backed by PostgreSQL sessions; the browser never receives a password hash or session ID as application data. Account, alert, notification, and watchlist ownership is always resolved from the authenticated server session.
+
+Two-factor authentication uses time-based one-time passwords (TOTP). Login challenges expire quickly, recovery codes are one-use hashes, and authentication/account-action endpoints are rate limited. Email verification is optional for current dashboard features.
+
+## Telegram market feed
+
+CoinDash can identify significant market movement from its shared market cache and queue optional Telegram alerts. The feed detects configured price changes, volume spikes, and range breakouts; it includes cooldowns, rate limits, and expiry rules to prevent repeated or stale notifications.
+
+Telegram staging deployment and operational checks are documented in [docs/telegram-staging-runbook.md](docs/telegram-staging-runbook.md).
+
+## Screenshots
+
+Add screenshots of the Markets dashboard, chart workspace, Signals Center, and Account Settings here when publishing the project.
+
+## License
+
+This project is licensed under the ISC License. See [package.json](package.json) for the declared license.
