@@ -4,6 +4,10 @@
 .env copy.example
 .env.backup-telegram-staging
 
+
+node_modules/
+*.bak-*
+
 # Persistent SQLite application data
 /data/
 *.sqlite
