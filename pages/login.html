@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070810" />
+    <title>Sign in | CoinDash</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="auth-page auth-page-login">
+    <main class="auth-shell">
+      <header class="auth-brand">
+        <a class="logo" href="/markets" aria-label="CoinDash home">Coin<span>Dash</span></a>
+        <a class="auth-market-link" href="/markets">Explore markets <span aria-hidden="true">→</span></a>
+      </header>
+      <div class="auth-layout">
+        <aside class="auth-context" aria-label="CoinDash account benefits">
+          <p class="section-label">MARKET INTELLIGENCE, PERSONALIZED</p>
+          <h2>Your market view, ready when you are.</h2>
+          <p>Return to the watchlists, signals, and market context you chose—without losing focus.</p>
+          <ul class="auth-trust-list">
+            <li><span aria-hidden="true">01</span><strong>Personal watchlists</strong></li>
+            <li><span aria-hidden="true">02</span><strong>Account-level alert controls</strong></li>
+            <li><span aria-hidden="true">03</span><strong>Secure session-based access</strong></li>
+          </ul>
+        </aside>
+        <section class="auth-card" aria-labelledby="authTitle">
+          <div class="auth-card-header">
+            <p class="section-label">WELCOME BACK</p>
+            <h1 id="authTitle">Sign in to CoinDash</h1>
+            <p class="auth-copy">Use your account email and password to continue.</p>
+          </div>
+          <form data-auth-form="login" novalidate>
+            <div class="auth-field">
+              <label for="loginEmail">Email address</label>
+              <input id="loginEmail" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="you@example.com" aria-describedby="authFeedback" required />
+            </div>
+            <div class="auth-field">
+              <div class="auth-label-row">
+                <label for="loginPassword">Password</label>
+                <a href="/forgot-password">Forgot password?</a>
+              </div>
+              <span class="password-field">
+                <input id="loginPassword" name="password" type="password" autocomplete="current-password" aria-describedby="authFeedback" required />
+                <button type="button" data-password-toggle="loginPassword" aria-label="Show password" aria-pressed="false">Show</button>
+              </span>
+            </div>
+            <p id="authFeedback" class="auth-feedback" role="status" aria-live="polite"></p>
+            <button class="login-button auth-submit" type="submit">Sign in</button>
+          </form>
+          <p class="auth-switch">New to CoinDash? <a href="/signup">Create an account</a></p>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="../js/pages/auth.js"></script>
+    <script type="module" src="/js/ui/site-footer.js"></script>
+    <script type="module" src="/js/ui/cookie-consent.js"></script>
+  </body>
+</html>

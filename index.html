@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>CoinDash</title>
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body class="dashboard-shell-page">
+    <script>
+      try {
+        if (localStorage.getItem("cointrack.dashboard-sidebar-collapsed.v1") === "true") {
+          document.body.classList.add("dashboard-sidebar-collapsed");
+        }
+      } catch {}
+    </script>
+    <!-- Navigation -->
+    <header class="navbar">
+      <a href="/" class="logo"> Coin<span>Dash</span> </a>
+
+      <nav class="nav-links" id="primaryNav" aria-label="Main navigation">
+        <a
+          class="nav-sentiment nav-sentiment-mobile"
+          href="/#marketSentiment"
+          aria-label="Market sentiment loading"
+          data-sentiment="neutral"
+        >
+          <span class="nav-sentiment-copy">
+            <small>MARKET SENTIMENT</small>
+            <strong class="nav-sentiment-value">Loading…</strong>
+          </span>
+          <span class="nav-sentiment-meter" aria-hidden="true"><span class="nav-sentiment-fill"></span></span>
+        </a>
+        <a href="/markets">Markets</a>
+        <a href="/trending">Trending</a>
+        <a href="/watchlist">Watchlist</a>
+        <div class="auth-nav-links" data-auth-mobile aria-live="polite"></div>
+      </nav>
+
+      <div class="nav-actions">
+        <span class="auth-nav-status" data-auth-status role="status" aria-live="polite"></span>
+        <a
+          class="nav-sentiment nav-sentiment-desktop"
+          href="/#marketSentiment"
+          aria-label="Market sentiment loading"
+          data-sentiment="neutral"
+        >
+          <span class="nav-sentiment-copy">
+            <small>MARKET MOOD</small>
+            <strong class="nav-sentiment-value">Loading…</strong>
+          </span>
+          <span class="nav-sentiment-meter" aria-hidden="true"><span class="nav-sentiment-fill"></span></span>
+        </a>
+        <div class="nav-search" id="navSearch">
+          <button
+            class="search-button"
+            id="navSearchToggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="searchInput"
+            aria-label="Open coin search"
+          >
+            <span>Search</span>
+          </button>
+          <input
+            id="searchInput"
+            class="nav-search-input"
+            type="text"
+            placeholder="Search coins..."
+            aria-label="Search cryptocurrencies"
+            autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="searchSuggestions"
+            aria-activedescendant=""
+          />
+          <button
+            id="clearSearchButton"
+            class="nav-search-clear"
+            type="button"
+            aria-label="Clear search and show all coins"
+            title="Clear search"
+            hidden
+          >
+            ×
+          </button>
+          <div
+            id="searchSuggestions"
+            class="search-suggestions"
+            role="listbox"
+            aria-label="Matching cryptocurrencies"
+            hidden
+          ></div>
+        </div>
+        <div class="auth-nav-actions" data-auth-desktop aria-live="polite"></div>
+        <button
+          class="mobile-nav-toggle"
+          id="mobileNavToggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="primaryNav"
+          aria-label="Open navigation menu"
+        >
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <!-- Hero -->
+      <section class="hero workspace-hero dashboard-overview-hero">
+        <div class="dashboard-hero-copy">
+          <div class="dashboard-hero-kicker">
+            <p class="hero-label">MARKET OVERVIEW</p>
+            <p id="marketConnectionStatus" class="market-connection-status" data-state="connecting" role="status" aria-live="polite"><span></span> Connecting to live updates…</p>
+          </div>
+
+          <h1>Track the market.<span>Spot the moves.</span></h1>
+
+          <p class="hero-description">
+            Follow prices, momentum, volume and market structure in one focused view.
+          </p>
+
+          <nav class="dashboard-hero-actions" aria-label="Dashboard shortcuts">
+            <a href="/markets">Explore markets <span aria-hidden="true">→</span></a>
+            <a href="/trending">View trending</a>
+          </nav>
+        </div>
+
+        <div class="market-overview dashboard-hero-snapshot" id="marketOverview" aria-busy="true">
+          <div class="dashboard-snapshot-heading">
+            <p class="section-label">GLOBAL MARKET SNAPSHOT</p>
+            <p id="marketOverviewStatus" role="status" aria-live="polite">Loading global market data…</p>
+          </div>
+
+          <div class="dashboard-snapshot-primary">
+            <p>Total crypto market cap</p>
+            <strong id="marketCapValue">—</strong>
+            <span id="marketCapChange"></span>
+          </div>
+
+          <div class="dashboard-snapshot-metrics">
+            <div>
+              <p>24h volume</p>
+              <strong id="volumeValue">—</strong>
+              <span id="volumeChange"></span>
+            </div>
+            <div>
+              <p>BTC dominance</p>
+              <strong id="btcDominanceValue">—</strong>
+              <span>Global share</span>
+            </div>
+            <div>
+              <p>Active assets</p>
+              <strong id="activeCoinsValue">—</strong>
+              <span>CoinGecko markets</span>
+            </div>
+          </div>
+
+          <p id="lastUpdated">Waiting for first market update…</p>
+        </div>
+      </section>
+
+      <section class="market-motion" id="marketMotion" aria-labelledby="marketMotionTitle" aria-busy="true" data-state="loading">
+        <div class="market-motion__meta">
+          <div class="market-motion__label">
+            <span aria-hidden="true"></span>
+            <h2 id="marketMotionTitle">LIVE MARKETS</h2>
+          </div>
+          <p data-market-motion-status role="status" aria-live="polite">Loading market prices…</p>
+        </div>
+        <div class="market-motion__viewport" data-market-motion-viewport tabindex="0" aria-label="Scrolling major cryptocurrency prices" aria-describedby="marketMotionSummary">
+          <div class="market-motion__track" data-market-motion-track aria-hidden="true" hidden>
+            <div class="market-motion__sequence" data-market-motion-primary></div>
+            <div class="market-motion__sequence" data-market-motion-clone></div>
+          </div>
+          <p class="market-motion__empty" data-market-motion-empty>Loading market prices…</p>
+        </div>
+        <p class="visually-hidden" id="marketMotionSummary" data-market-motion-summary>Major cryptocurrency prices are loading.</p>
+      </section>
+
+      <section class="market-dominance-section" aria-labelledby="btcDominanceTitle">
+        <div class="market-dominance-heading">
+          <div>
+            <p class="section-label">BTC DOMINANCE</p>
+            <h2 id="btcDominanceTitle">Bitcoin’s share of the crypto market</h2>
+          </div>
+          <p id="btcDominanceStatus" role="status" aria-live="polite">Loading global market data…</p>
+        </div>
+        <div class="market-dominance-content" id="btcDominanceContent" aria-busy="true">
+          <strong class="market-dominance-value" id="btcDominanceHeroValue">—</strong>
+          <div class="market-dominance-shares">
+            <p><span>Bitcoin</span><strong id="btcDominanceBitcoinShare">—</strong></p>
+            <p><span>Altcoins</span><strong id="btcDominanceAltcoinShare">—</strong></p>
+          </div>
+          <div class="market-dominance-bar" id="btcDominanceBar" role="img" aria-label="BTC dominance loading">
+            <span class="market-dominance-btc" id="btcDominanceBitcoinBar"></span>
+            <span class="market-dominance-alt" id="btcDominanceAltcoinBar"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- coin details -->
+      <section class="coin-details" id="coinDetails">
+        <div class="details-header">
+          <div>
+            <p id="detailsSymbol">BTC &middot; LIVE MARKET</p>
+            <div class="details-title">
+              <img id="detailsIcon" alt="" hidden>
+              <h2 id="detailsName">Bitcoin</h2>
+            </div>
+          </div>
+          <div class="details-actions">
+            <span id="detailsWatchlistAction"></span>
+            <button id="closeDetails">Close</button>
+          </div>
+        </div>
+
+        <div class="details-price">
+          <h1 id="detailsPrice">$0.00</h1>
+          <span id="detailsChange">0.00%</span>
+        </div>
+
+        <div class="details-stats">
+          <div>
+            <p>Market Cap</p>
+            <strong id="detailsMarketCap">$0.00</strong>
+          </div>
+
+          <div>
+            <p>24h Volume</p>
+            <strong id="detailsVolume">$0.00</strong>
+          </div>
+
+          <div>
+            <p>24h High</p>
+            <strong id="detailsHigh">$0.00</strong>
+          </div>
+
+          <div>
+            <p>24h Low</p>
+            <strong id="detailsLow">$0.00</strong>
+          </div>
+        </div>
+        <!-- Price Chart -->
+        <div class="price-chart">
+          <div class="chart-toolbar">
+            <div class="chart-readout" aria-live="polite">
+              <span><small>O</small><strong id="chartOpen">--</strong></span>
+              <span><small>H</small><strong id="chartHigh">--</strong></span>
+              <span><small>L</small><strong id="chartLow">--</strong></span>
+              <span><small>C</small><strong id="chartClose">--</strong></span>
+            </div>
+            <div
+              class="chart-controls"
+              role="group"
+              aria-label="Chart timeframe"
+            >
+              <button class="chart-range" data-interval="1m">1m</button>
+              <button class="chart-range" data-interval="5m">5m</button>
+              <button class="chart-range" data-interval="1h">1hr</button>
+              <button class="chart-range" data-interval="4h">4hr</button>
+              <button class="chart-range active" data-days="1">24H</button>
+              <button class="chart-range" data-days="7">7D</button>
+              <button class="chart-range" data-days="30">30D</button>
+              <button class="chart-range" data-days="365">1Y</button>
+            </div>
+          </div>
+          <p id="chartStatus"></p>
+          <div class="chart-price-panel">
+            <div id="priceChart" aria-label="Candlestick price chart"></div>
+          </div>
+          <div class="chart-volume-heading">
+            <span>VOLUME</span><span>USD / USDT</span>
+          </div>
+          <div class="chart-volume-panel">
+            <div id="volumeChart" aria-label="Trading volume chart"></div>
+          </div>
+          <div class="chart-rsi-heading">
+            <span>RSI (14)</span><strong id="rsiValue">--</strong
+            ><span>70 / 30</span>
+          </div>
+          <div class="chart-rsi-panel">
+            <div id="rsiChart" aria-label="Relative strength index chart"></div>
+          </div>
+          <p class="chart-attribution">
+            Data: <span id="chartDataSource">CoinGecko</span> · TradingView Lightweight Charts™ Copyright © 2025
+            <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView, Inc.</a>
+          </p>
+        </div>
+      </section>
+
+      <!-- Popular Coins -->
+      <section class="coins-section" id="markets">
+        <div class="section-heading">
+          <div>
+            <p class="section-label">MARKET</p>
+            <h2>Popular cryptocurrencies</h2>
+          </div>
+
+          <a href="/markets#market-table">View all →</a>
+        </div>
+
+        <div
+          class="search-results-status"
+          id="searchResultsStatus"
+          aria-live="polite"
+          hidden
+        >
+          <span
+            >Showing results for <strong id="searchResultsTerm"></strong
+          ></span>
+          <button
+            id="clearResultsSearch"
+            type="button"
+            aria-label="Clear search and show all coins"
+            title="Show all coins"
+          >
+            <span>Clear</span
+            ><span class="search-clear-icon" aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="coin-grid" id="coinGrid" aria-busy="true"></div>
+
+      </section>
+
+      <section class="market-sentiment" id="marketSentiment" aria-labelledby="sentimentTitle">
+        <div class="sentiment-heading">
+          <div>
+            <p class="section-label">MARKET SENTIMENT</p>
+            <h2 id="sentimentTitle">Overall crypto market</h2>
+          </div>
+          <p class="sentiment-status" id="sentimentStatus" role="status" aria-live="polite">Calculating market breadth…</p>
+        </div>
+
+        <div class="sentiment-panel" id="sentimentPanel" aria-busy="true">
+          <div class="sentiment-gauge-column">
+            <div class="sentiment-gauge" id="sentimentGauge" role="img" aria-label="Overall market sentiment score loading">
+              <svg viewBox="0 0 320 190" aria-hidden="true" focusable="false">
+                <g id="sentimentZones" fill="none" stroke-width="16" stroke-linecap="round"></g>
+                <circle id="sentimentMarker" cx="50" cy="165" r="7" />
+              </svg>
+              <div class="sentiment-score" aria-hidden="true">
+                <strong id="sentimentValue">—</strong>
+                <span id="sentimentClassification">Loading</span>
+              </div>
+            </div>
+            <div class="sentiment-legend" aria-hidden="true">
+              <span class="fear-extreme">Extreme<br />Fear</span>
+              <span class="fear">Fear</span>
+              <span class="neutral">Neutral</span>
+              <span class="greed">Greed</span>
+              <span class="greed-extreme">Extreme<br />Greed</span>
+            </div>
+          </div>
+
+          <div class="sentiment-details">
+            <p class="sentiment-details-label">TOP 100 MARKET SNAPSHOT</p>
+            <div class="sentiment-history">
+              <div><span>24h weighted trend</span><strong id="sentiment24h">—</strong></div>
+              <div><span>7d weighted trend</span><strong id="sentiment7d">—</strong></div>
+            </div>
+            <p class="sentiment-trend" id="sentimentBreadth">Loading advancing coins…</p>
+            <p class="sentiment-updated" id="sentimentUpdated">Updated —</p>
+            <p class="sentiment-methodology">Score blends market-cap weighted 24h and 7d returns with the share of top 100 coins rising.</p>
+            <a class="sentiment-source" href="https://www.coingecko.com/en/api/documentation" target="_blank" rel="noopener noreferrer">Market data by CoinGecko ↗</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Market Movers -->
+      <section class="coins-section market-movers-section" id="marketMovers">
+        <div class="section-heading-row">
+          <div>
+            <span class="section-eyebrow">MARKET MOVERS</span>
+            <h2>Gainers &amp; Losers</h2>
+            <p>
+              See which cryptocurrencies are leading and falling across the
+              market.
+            </p>
+          </div>
+        </div>
+
+        <div class="market-movers-grid">
+          <!-- Top Gainers -->
+          <div class="market-movers-panel">
+            <div class="market-movers-header">
+              <div>
+                <span class="movers-label gainers-label">TOP GAINERS</span>
+                <h3>Gainers</h3>
+              </div>
+
+              <span class="movers-period">24H</span>
+            </div>
+
+            <div id="topGainers" class="market-movers-list">
+              <!-- Gainers will be inserted by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Top Losers -->
+          <div class="market-movers-panel">
+            <div class="market-movers-header">
+              <div>
+                <span class="movers-label losers-label">TOP LOSERS</span>
+                <h3>Losers</h3>
+              </div>
+
+              <span class="movers-period">24H</span>
+            </div>
+
+            <div id="topLosers" class="market-movers-list">
+              <!-- Losers will be inserted by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Coin Table -->
+      <section class="market-breadth-section" aria-labelledby="marketBreadthTitle">
+        <div class="market-breadth-heading">
+          <div>
+            <p class="section-label">MARKET BREADTH</p>
+            <h2 id="marketBreadthTitle">Market participation</h2>
+          </div>
+          <p class="market-breadth-total" id="marketBreadthTotal" aria-live="polite">Loading coins…</p>
+        </div>
+        <div class="market-breadth-content" id="marketBreadthContent" aria-busy="true">
+          <div class="market-breadth-stats">
+            <div class="market-breadth-stat advancing">
+              <strong id="marketBreadthAdvancing">—</strong>
+              <span>↑ ADVANCING</span>
+            </div>
+            <div class="market-breadth-stat declining">
+              <strong id="marketBreadthDeclining">—</strong>
+              <span>↓ DECLINING</span>
+            </div>
+            <p class="market-breadth-unchanged"><strong id="marketBreadthUnchanged">—</strong> unchanged</p>
+            <p class="market-breadth-unavailable"><strong id="marketBreadthUnavailable">—</strong> unavailable</p>
+          </div>
+          <div class="market-breadth-bar" role="img" id="marketBreadthBar" aria-label="Market breadth loading">
+            <span class="market-breadth-bar-advancing" id="marketBreadthBarAdvancing"></span>
+            <span class="market-breadth-bar-declining" id="marketBreadthBarDeclining"></span>
+            <span class="market-breadth-bar-unchanged" id="marketBreadthBarUnchanged"></span>
+          </div>
+          <p class="market-breadth-summary" id="marketBreadthSummary" role="status" aria-live="polite">Calculating market breadth…</p>
+        </div>
+      </section>
+
+      <section class="market-table-section" id="market-table">
+        <div class="section-heading market-overview-heading">
+          <div>
+            <p class="section-label">MARKETS</p>
+            <h2>Market overview</h2>
+
+            <select id="sortSelect" aria-label="Sort market table">
+              <option value="default">Market Rank</option>
+              <option value="price">Price</option>
+              <option value="change1h">1h Change</option>
+              <option value="marketCap">Market Cap</option>
+              <option value="change">24h Change</option>
+              <option value="change7d">7d Change</option>
+              <option value="high24h">24h High</option>
+              <option value="low24h">24h Low</option>
+              <option value="volume">24h Volume</option>
+              <option value="circulatingSupply">Circulating Supply</option>
+            </select>
+          </div>
+          <a href="/markets#market-table" aria-label="View the complete cryptocurrency market table">
+            View all markets <span aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <div
+          class="search-results-status market-table-search-status"
+          id="marketTableSearchStatus"
+          aria-live="polite"
+          hidden
+        >
+          <span>Showing table results for <strong id="marketTableSearchTerm"></strong></span>
+          <button
+            id="clearMarketTableSearch"
+            type="button"
+            aria-label="Clear search and show all market coins"
+            title="Show all market coins"
+          >
+            <span>Clear</span><span class="search-clear-icon" aria-hidden="true">×</span>
+          </button>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th class="table-rank-column" aria-sort="ascending"><button type="button" data-market-sort="default"># <span aria-hidden="true">↑</span></button></th>
+                <th>Name</th>
+                <th class="table-price-column"><button type="button" data-market-sort="price">Price <span aria-hidden="true">↕</span></button></th>
+                <th class="table-change-1h-column"><button type="button" data-market-sort="change1h">1H <span aria-hidden="true">↕</span></button></th>
+                <th class="table-change-24h-column"><button type="button" data-market-sort="change">24H <span aria-hidden="true">↕</span></button></th>
+                <th class="table-change-7d-column"><button type="button" data-market-sort="change7d">7D <span aria-hidden="true">↕</span></button></th>
+                <th class="table-high-column"><button type="button" data-market-sort="high24h">24h High <span aria-hidden="true">↕</span></button></th>
+                <th class="table-low-column"><button type="button" data-market-sort="low24h">24h Low <span aria-hidden="true">↕</span></button></th>
+                <th class="table-market-cap-column"><button type="button" data-market-sort="marketCap">Market Cap <span aria-hidden="true">↕</span></button></th>
+                <th class="table-volume-column"><button type="button" data-market-sort="volume">24h Volume <span aria-hidden="true">↕</span></button></th>
+                <th class="table-supply-column"><button type="button" data-market-sort="circulatingSupply">Circulating Supply <span aria-hidden="true">↕</span></button></th>
+                <th>Last 7 Days</th>
+              </tr>
+            </thead>
+
+            <tbody id="coinTableBody"></tbody>
+          </table>
+        </div>
+        <div id="pagination" class="pagination"></div>
+      </section>
+
+      <section class="coins-section market-news-section" id="market-news">
+        <div class="section-heading-row">
+          <div>
+            <span class="section-eyebrow">MARKET INTELLIGENCE</span>
+            <h2>Breaking Crypto</h2>
+            <p>
+              Stay updated with the latest stories moving the crypto market.
+            </p>
+          </div>
+
+          <span class="live-indicator">
+            <span class="live-dot"></span>
+            LIVE FEED
+          </span>
+        </div>
+
+        <div id="cryptoNews"></div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/lightweight-charts@5.2.1/dist/lightweight-charts.standalone.production.js"></script>
+    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/ui/fear-greed.js"></script>
+    <script type="module" src="js/ui/nav.js"></script>
+    <script type="module" src="./js/pages/market-news.js"></script>
+    <script type="module" src="/js/ui/site-footer.js"></script>
+    <script type="module" src="/js/ui/cookie-consent.js"></script>
+  </body>
+</html>

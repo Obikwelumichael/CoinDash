@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070810" />
+    <meta
+      name="description"
+      content="Draft CoinDash privacy and storage information."
+    />
+    <title>Privacy Policy | CoinDash</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="navbar legal-header">
+      <a href="/markets" class="logo" aria-label="CoinDash home"
+        >Coin<span>Dash</span></a
+      >
+      <nav class="legal-header-links" aria-label="Site navigation">
+        <a href="/markets">Markets</a>
+        <a href="/trending">Trending</a>
+        <a href="/watchlist">Watchlist</a>
+      </nav>
+    </header>
+    <main class="legal-page">
+      <p class="legal-eyebrow">CoinDash policies</p>
+      <h1>Privacy Policy</h1>
+      <p class="legal-updated">Last updated: 15 October 2026</p>
+      <p class="legal-draft-notice" role="note">
+        <strong>Draft for review.</strong> This page describes behavior found in
+        the current application. Retention schedules, production email delivery,
+        external service processing locations, and the legal requirements for
+        serving users internationally still need to be confirmed. Complete
+        those details and obtain appropriate privacy/legal review before
+        production use.
+      </p>
+
+      <p>
+        This draft explains how CoinDash handles information when you browse
+        its cryptocurrency market dashboard, create an account, save a
+        watchlist, configure alerts, or use account settings. Cookie consent and
+        acceptance of the Terms of Use are separate decisions; choosing cookie
+        preferences does not accept the Terms.
+      </p>
+
+      <section aria-labelledby="privacy-operator">
+        <h2 id="privacy-operator">Who operates CoinDash?</h2>
+        <p>
+          CoinDash is operated by Obikwelu Michael from Nigeria and is
+          intended for users aged 18 and over worldwide, where use is lawful.
+          It is an independently operated cryptocurrency dashboard for general
+          personal information and does not provide professional investment
+          advice.
+        </p>
+        <p>
+          Privacy contact:
+          <a href="mailto:Saintdevopz@gmail.com">Saintdevopz@gmail.com</a>.
+        </p>
+      </section>
+
+      <section aria-labelledby="privacy-law">
+        <h2 id="privacy-law">Applicable privacy law</h2>
+        <p>
+          CoinDash operates from Nigeria, where the Nigeria Data Protection
+          Act, 2023 governs applicable processing of personal data. Other
+          privacy laws may also apply to our activities involving users in
+          other countries. The service's informational purpose does not remove
+          applicable privacy obligations or your statutory rights.
+        </p>
+      </section>
+
+      <section aria-labelledby="privacy-information">
+        <h2 id="privacy-information">Information handled by the application</h2>
+        <h3>Account and security information</h3>
+        <p>
+          If you register, the application stores your display name, normalized
+          email address, an Argon2id password hash, account timestamps, and
+          email-verification status. It does not store your password in
+          plaintext. If you enable two-factor authentication, an encrypted TOTP
+          secret and hashed recovery-code records are stored. Password-reset and
+          email-verification records contain token hashes and expiry/use status,
+          not the raw tokens.
+        </p>
+        <h3>Account features</h3>
+        <p>
+          The database stores your saved CoinGecko coin IDs, supported account
+          preferences (currently theme and whether alert emails are requested),
+          market-alert conditions, and in-app alert notifications. Alert records
+          may include the coin, threshold, direction, observed value, read
+          status, and timestamps. These records are associated with your
+          account.
+        </p>
+        <h3>Technical and operational information</h3>
+        <p>
+          Account sessions are stored server-side in PostgreSQL and referenced
+          by an opaque session cookie. Rate-limiting middleware processes a
+          client network address in memory to restrict repeated authentication
+          and account actions. The application does not currently write IP
+          addresses or browser-agent strings to its user database and does not
+          run a dedicated web access-log middleware. Application errors may be
+          written to server logs. Hosting, database, email, and network
+          providers may maintain their own technical logs; their exact fields
+          and retention periods must be confirmed with those providers.
+        </p>
+      </section>
+
+      <section id="cookies" aria-labelledby="privacy-storage">
+        <h2 id="privacy-storage">Cookies and browser storage</h2>
+        <p>
+          <strong>Necessary session cookie:</strong> signed-in functionality
+          uses the HTTP-only <code>cryptodash.sid</code> cookie. It is marked
+          Secure in production, uses SameSite=Lax, and has a rolling maximum age
+          of seven days. It supports authentication and security and cannot be
+          disabled through the optional preferences panel without making sign-in
+          unavailable.
+        </p>
+        <p>
+          <strong>Cookie choice record:</strong> the consent interface saves a
+          versioned record containing your decision, category flags, and
+          timestamp in this browser’s <code>localStorage</code>. This record is
+          not a cookie, is not sent to the server, and does not contain account
+          credentials.
+        </p>
+        <p>
+          <strong>Session storage:</strong> the Trending page uses tab-scoped
+          <code>sessionStorage</code> for a small previous-rank snapshot used to
+          show rank movement. It is not used to authenticate you and is cleared
+          by the browser when the tab session ends.
+        </p>
+        <p>
+          The current application has no optional analytics, advertising, or
+          marketing tracker integration. The account theme and email-alert
+          preferences are stored in your account database, not in optional
+          browser cookies. If optional storage or tracking is added later, this
+          page and the consent version/categories must be reviewed before
+          activation.
+        </p>
+      </section>
+
+      <section aria-labelledby="privacy-purpose">
+        <h2 id="privacy-purpose">Why information is used</h2>
+        <p>
+          Account data is used to create and secure your account, authenticate
+          requests, deliver requested verification/reset messages, and provide
+          the watchlist, preferences, alerts, and notifications you use.
+          Technical processing supports session operation, abuse prevention,
+          troubleshooting, and service reliability. The consent record remembers
+          the choice made in this browser. Market and news requests provide the
+          dashboard features you request.
+        </p>
+      </section>
+
+      <section aria-labelledby="privacy-providers">
+        <h2 id="privacy-providers">Service providers and external links</h2>
+        <p>
+          CoinDash uses Reonr (reonr.com) for application hosting in Nigeria,
+          as confirmed by the operator. The PostgreSQL database used for
+          account data is also hosted in Nigeria.
+        </p>
+        <ul>
+          <li>
+            <a
+              href="https://www.coingecko.com/en/api"
+              target="_blank"
+              rel="noopener noreferrer"
+              >CoinGecko</a
+            >
+            supplies market prices, search/trending data, market statistics, and
+            chart history through server-side API requests.
+          </li>
+          <li>
+            <a
+              href="https://developers.binance.com/en/docs/products/spot/rest-api"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Binance</a
+            >
+            supplies exchange candlesticks for supported intraday chart
+            intervals through server-side public market-data requests.
+          </li>
+          <li>
+            <a
+              href="https://cryptocurrency.cv/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Cryptocurrency.cv</a
+            >
+            supplies the aggregated crypto-news feed. Article links may take you
+            to the original publisher, which has its own privacy practices.
+          </li>
+          <li>
+            <a
+              href="https://www.brevo.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Brevo</a
+            >
+            is the application's email integration. When email delivery is
+            configured, it processes recipient email addresses and message
+            content for verification, password resets, and requested market
+            alerts. Production configuration and successful delivery still need
+            to be verified.
+          </li>
+          <li>
+            Google Fonts and the unpkg CDN are contacted by the browser to load
+            fonts and the TradingView Lightweight Charts library. Those
+            providers receive ordinary network request information such as your
+            IP address and request metadata.
+          </li>
+        </ul>
+        <p>
+          Market/news APIs are called by the CoinDash server, so those
+          providers ordinarily receive the server’s network address and request
+          details rather than your account session cookie. The browser directly
+          contacts font/chart asset hosts. The app does not intentionally send
+          your password or account session cookie to these market-data or asset
+          providers. Confirm current provider terms, data locations, and any
+          contractual requirements before launch.
+        </p>
+      </section>
+
+      <section aria-labelledby="privacy-retention">
+        <h2 id="privacy-retention">Retention and deletion</h2>
+        <p>
+          Account records and related watchlist, preference, alert,
+          notification, and security records remain in the database while the
+          account exists. The account-deletion flow deletes the user and related
+          rows and invalidates stored sessions. Session rows expire according to
+          their expiry timestamp; password-reset links expire after 30 minutes
+          and verification links after 24 hours. The code marks token rows used,
+          but does not define a complete cleanup or backup-retention schedule.
+        </p>
+        <p>
+          Application, infrastructure, email-provider, and backup retention
+          periods have not been configured in this project. The operator must
+          document those periods and any deletion delays before publication.
+        </p>
+      </section>
+
+      <section aria-labelledby="privacy-security">
+        <h2 id="privacy-security">Security</h2>
+        <p>
+          The application uses Argon2id password hashing, server-side sessions,
+          HTTP-only session cookies, encrypted TOTP secrets, hashed recovery
+          codes, expiring single-use email tokens, and request rate limits.
+          Production session cookies are configured Secure. These measures
+          reduce risk but cannot guarantee absolute security; protect your email
+          account and use a unique password.
+        </p>
+      </section>
+
+      <section aria-labelledby="privacy-rights">
+        <h2 id="privacy-rights">Your choices and privacy requests</h2>
+        <p>
+          You can change or withdraw optional browser-storage preferences at any
+          time using
+          <a href="#cookie-settings" data-open-cookie-settings
+            >Cookie Settings</a
+          >. No optional analytics or marketing categories are currently active.
+          You can delete your account from Account Settings; account deletion
+          removes the database records listed above, subject to backups,
+          provider records, or any retention required by applicable law.
+        </p>
+        <p>
+          Depending on your location and applicable law, you may have rights to
+          request information, access, correction, deletion, restriction,
+          portability, or to object to certain processing or complain to a
+          regulator. To make a privacy request, contact
+          <a href="mailto:Saintdevopz@gmail.com">Saintdevopz@gmail.com</a>.
+          You may also lodge a complaint with the
+          <a href="https://ndpc.gov.ng/" target="_blank" rel="noopener noreferrer"
+            >Nigeria Data Protection Commission</a
+          >, or another competent data protection authority where applicable.
+        </p>
+      </section>
+
+      <section aria-labelledby="privacy-children">
+        <h2 id="privacy-children">Minimum age and children</h2>
+        <p>
+          You must be at least 18 years old to create an account or use
+          CoinDash. The service is not intended for anyone under 18. The
+          application does not currently verify age. If you believe someone
+          under 18 has provided personal information through the service,
+          contact
+          <a href="mailto:Saintdevopz@gmail.com">Saintdevopz@gmail.com</a>.
+        </p>
+      </section>
+
+      <section aria-labelledby="privacy-transfers">
+        <h2 id="privacy-transfers">International processing</h2>
+        <p>
+          CoinDash is operated from Nigeria, with its application, PostgreSQL
+          database, and operator-managed backups located in Nigeria, as
+          confirmed by the operator. It is intended for a global audience.
+        </p>
+        <p>
+          External services, including Brevo when configured and browser-loaded
+          font and chart providers, may process information outside Nigeria.
+          Before production, confirm their processing locations, transfer
+          arrangements, and disclosures required for the operator's users and
+          jurisdiction.
+        </p>
+      </section>
+
+      <section aria-labelledby="privacy-updates">
+        <h2 id="privacy-updates">Policy updates</h2>
+        <p>
+          The “Last updated” date will change when this page is revised. The
+          application has no dedicated privacy-policy change notification
+          workflow; the operator should establish an appropriate notice process
+          for material changes where required.
+        </p>
+      </section>
+    </main>
+    <script type="module" src="/js/ui/site-footer.js"></script>
+    <script type="module" src="/js/ui/cookie-consent.js"></script>
+  </body>
+</html>

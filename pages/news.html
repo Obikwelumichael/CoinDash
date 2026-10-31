@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070810" />
+    <title>Crypto News &amp; Market Intelligence | CoinDash</title>
+    <meta name="description" content="Follow important cryptocurrency news, market developments, regulation and asset-specific updates with CoinDash." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="news-page-body dashboard-shell-page">
+    <script>
+      try {
+        if (localStorage.getItem("cointrack.dashboard-sidebar-collapsed.v1") === "true") {
+          document.body.classList.add("dashboard-sidebar-collapsed");
+        }
+      } catch {}
+    </script>
+    <header class="navbar">
+      <a href="/" class="logo">Coin<span>Dash</span></a>
+      <nav class="nav-links" id="primaryNav" aria-label="Main navigation">
+        <a href="/markets">Markets</a>
+        <a href="/trending">Trending</a>
+        <a href="/watchlist">Watchlist</a>
+        <a href="/signals">Signals</a>
+        <a href="/news" aria-current="page">News</a>
+        <div class="auth-nav-links" data-auth-mobile aria-live="polite"></div>
+      </nav>
+      <div class="nav-actions">
+        <span class="auth-nav-status" data-auth-status role="status" aria-live="polite"></span>
+        <div class="auth-nav-actions" data-auth-desktop aria-live="polite"></div>
+        <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-expanded="false" aria-controls="primaryNav" aria-label="Open navigation menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="news-main dashboard-main">
+      <section class="news-page-heading" aria-labelledby="newsPageTitle">
+        <div>
+          <p class="section-label">MARKET INTELLIGENCE</p>
+          <h1 id="newsPageTitle">Crypto <span>News</span></h1>
+          <p>Track important cryptocurrency stories, regulation, protocol developments and the broader forces shaping digital-asset markets.</p>
+        </div>
+        <div class="news-update-actions">
+          <p>Last updated <time data-news-updated>Waiting for update</time></p>
+          <button type="button" data-news-refresh aria-label="Refresh cryptocurrency news">
+            <span aria-hidden="true">↻</span> Refresh
+          </button>
+        </div>
+      </section>
+
+      <div class="news-page-status" data-news-status role="status" aria-live="polite">Loading the latest market intelligence…</div>
+
+      <section class="news-featured-section" aria-labelledby="featuredNewsTitle" aria-busy="true">
+        <div class="news-section-heading">
+          <div>
+            <p class="section-label">EDITORIAL PRIORITY</p>
+            <h2 id="featuredNewsTitle">Important developments</h2>
+          </div>
+          <p>Prioritized using article freshness, major-asset relevance, market and regulatory terms, and source credibility when supplied.</p>
+        </div>
+        <div class="news-featured-layout" data-featured-news></div>
+      </section>
+
+      <section class="news-discovery" aria-labelledby="latestNewsTitle">
+        <div class="news-feed-column">
+          <div class="news-section-heading news-feed-heading">
+            <div>
+              <p class="section-label">LATEST COVERAGE</p>
+              <h2 id="latestNewsTitle">The news feed</h2>
+            </div>
+            <span data-news-count>0 stories</span>
+          </div>
+
+          <div class="news-toolbar">
+            <label class="news-search" for="newsSearch">
+              <span class="visually-hidden">Search news</span>
+              <input id="newsSearch" type="search" placeholder="Search headlines, publishers or topics…" autocomplete="off" />
+            </label>
+            <div class="news-category-filters" data-news-filters role="group" aria-label="Filter news by category"></div>
+          </div>
+
+          <div class="news-feed" data-news-feed aria-live="polite" aria-busy="true"></div>
+          <div class="news-empty" data-news-empty hidden>
+            <strong>No matching stories</strong>
+            <p>Try another search or choose a different category.</p>
+            <button type="button" data-clear-news-filters>Show all news</button>
+          </div>
+        </div>
+
+        <aside class="news-market-context" aria-labelledby="marketContextTitle" aria-busy="true">
+          <div class="news-context-heading">
+            <p class="section-label">MARKET CONTEXT</p>
+            <h2 id="marketContextTitle">What prices are doing</h2>
+            <p>Live market data for context only. Price moves are not attributed to individual stories.</p>
+          </div>
+          <div data-market-context></div>
+          <a href="/markets">Explore all markets →</a>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="../js/pages/news.js"></script>
+    <script type="module" src="../js/ui/nav.js"></script>
+    <script type="module" src="/js/ui/site-footer.js"></script>
+    <script type="module" src="/js/ui/cookie-consent.js"></script>
+  </body>
+</html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Watchlist - CoinDash</title>
+
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+
+  <body class="dashboard-shell-page">
+    <script>
+      try {
+        if (localStorage.getItem("cointrack.dashboard-sidebar-collapsed.v1") === "true") {
+          document.body.classList.add("dashboard-sidebar-collapsed");
+        }
+      } catch {}
+    </script>
+    <!-- Navigation -->
+    <header class="navbar">
+      <a href="/" class="logo">Coin<span>Dash</span></a>
+
+      <nav class="nav-links" id="primaryNav" aria-label="Main navigation">
+        <a href="/markets">Markets</a>
+        <a href="/trending">Trending</a>
+        <a href="/watchlist" aria-current="page">Watchlist</a>
+        <div class="auth-nav-links" data-auth-mobile aria-live="polite"></div>
+      </nav>
+
+      <div class="nav-actions">
+        <span class="auth-nav-status" data-auth-status role="status" aria-live="polite"></span>
+        <div class="auth-nav-actions" data-auth-desktop aria-live="polite"></div>
+        <button
+          class="mobile-nav-toggle"
+          id="mobileNavToggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="primaryNav"
+          aria-label="Open navigation menu"
+        >
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Watchlist Page -->
+    <main class="watchlist-page dashboard-main">
+      <section class="hero watchlist-hero">
+        <div class="watchlist-hero-copy">
+          <p class="hero-label">YOUR MARKET RADAR</p>
+          <h1>Watchlist</h1>
+          <p class="hero-description">Keep track of the assets that matter to you.</p>
+        </div>
+        <div class="watchlist-hero-actions">
+          <p><strong data-watchlist-count>—</strong><span data-watchlist-count-label>Tracked assets</span></p>
+          <a href="/markets">Find assets <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+
+      <section class="watchlist-section" aria-labelledby="watchlistAssetsTitle">
+        <div class="watchlist-summary" aria-label="Watchlist summary">
+          <div><span>Tracked assets</span><strong data-summary-count>—</strong></div>
+          <div><span>Up in 24 hours</span><strong class="positive" data-summary-gainers>—</strong></div>
+          <div><span>Down in 24 hours</span><strong class="negative" data-summary-losers>—</strong></div>
+          <p data-market-status>Loading saved assets…</p>
+        </div>
+
+        <div class="watchlist-section-heading">
+          <div>
+            <p class="section-label">SAVED ASSETS</p>
+            <h2 id="watchlistAssetsTitle">Market overview</h2>
+            <p>Prices and market figures come from the latest available market snapshot.</p>
+          </div>
+          <a href="/markets">Add from Markets <span aria-hidden="true">＋</span></a>
+        </div>
+
+        <div class="watchlist-toolbar" aria-label="Watchlist controls">
+          <div class="watchlist-search">
+            <label class="visually-hidden" for="watchlistSearch">Search saved assets</label>
+            <span aria-hidden="true">⌕</span>
+            <input id="watchlistSearch" type="search" placeholder="Search name or symbol" autocomplete="off" />
+          </div>
+          <label class="watchlist-sort" for="watchlistSort">
+            <span>Sort by</span>
+            <select id="watchlistSort">
+              <option value="name-asc">Name · A–Z</option>
+              <option value="price-desc">Price · High to low</option>
+              <option value="change-desc">24h change · High to low</option>
+              <option value="market-cap-desc">Market cap · High to low</option>
+              <option value="volume-desc">24h volume · High to low</option>
+            </select>
+          </label>
+          <div class="watchlist-filters" role="group" aria-label="Filter saved assets">
+            <button type="button" data-watchlist-filter="all" aria-pressed="true">All</button>
+            <button type="button" data-watchlist-filter="gainers" aria-pressed="false">Gainers</button>
+            <button type="button" data-watchlist-filter="losers" aria-pressed="false">Losers</button>
+          </div>
+          <button class="watchlist-clear" type="button" data-watchlist-clear hidden>Clear filters</button>
+        </div>
+
+        <p id="watchlistStatus" class="watchlist-market-status" role="status" aria-live="polite"></p>
+
+        <div class="watchlist-table-shell" data-watchlist-table hidden>
+          <table class="watchlist-table">
+            <caption class="visually-hidden">Saved cryptocurrency market data</caption>
+            <thead>
+              <tr>
+                <th scope="col">Asset</th>
+                <th scope="col" class="watchlist-numeric">Price</th>
+                <th scope="col" class="watchlist-numeric">24h change</th>
+                <th scope="col" class="watchlist-numeric">24h volume</th>
+                <th scope="col" class="watchlist-numeric">Market cap</th>
+                <th scope="col">7d trend</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="watchlistCoins">
+              <!-- Watchlist coins will be rendered here -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="emptyWatchlist" hidden>
+          <span class="watchlist-empty-icon" aria-hidden="true">＋</span>
+          <p>Your watchlist starts here.</p>
+          <p>Save assets from Markets to follow their latest price, 24-hour movement, volume, and market capitalization.</p>
+          <a class="watchlist-browse" href="/markets"
+            >Explore markets <span aria-hidden="true">→</span></a
+          >
+        </div>
+
+        <div id="watchlistNoResults" class="watchlist-no-results" hidden>
+          <p>No saved assets match these filters.</p>
+          <p>Try another name or return to the full watchlist.</p>
+          <button type="button" data-watchlist-clear>Clear search and filters</button>
+        </div>
+      </section>
+
+      <section class="coin-details watchlist-chart-details" id="watchlistCoinDetails" aria-labelledby="watchlistChartName">
+        <div class="details-header">
+          <div>
+            <p id="watchlistChartSymbol">COIN</p>
+            <h2 id="watchlistChartName">Coin chart</h2>
+          </div>
+          <div class="details-chart-quote" aria-live="polite">
+            <strong id="watchlistChartPrice">—</strong>
+            <span id="watchlistChartChange">—</span>
+          </div>
+          <button id="closeWatchlistChart" type="button">Close chart</button>
+        </div>
+
+        <div class="price-chart">
+          <div class="chart-toolbar">
+            <div class="chart-readout" aria-live="polite">
+              <span><small>O</small><strong id="chartOpen">--</strong></span>
+              <span><small>H</small><strong id="chartHigh">--</strong></span>
+              <span><small>L</small><strong id="chartLow">--</strong></span>
+              <span><small>C</small><strong id="chartClose">--</strong></span>
+            </div>
+            <div class="chart-controls" role="group" aria-label="Chart timeframe">
+              <button class="chart-range" data-interval="1m" type="button">1m</button>
+              <button class="chart-range" data-interval="1h" type="button">1hr</button>
+              <button class="chart-range" data-interval="4h" type="button">4hr</button>
+              <button class="chart-range active" data-days="1" type="button">24H</button>
+              <button class="chart-range" data-days="7" type="button">7D</button>
+              <button class="chart-range" data-days="30" type="button">30D</button>
+              <button class="chart-range" data-days="365" type="button">1Y</button>
+            </div>
+          </div>
+          <p id="chartStatus" aria-live="polite"></p>
+          <div class="chart-price-panel"><div id="priceChart" aria-label="Candlestick price chart"></div></div>
+          <div class="chart-volume-heading"><span>VOLUME</span><span>USD / USDT</span></div>
+          <div class="chart-volume-panel"><div id="volumeChart" aria-label="Trading volume chart"></div></div>
+          <div class="chart-rsi-heading"><span>RSI (14)</span><strong id="rsiValue">--</strong><span>70 / 30</span></div>
+          <div class="chart-rsi-panel"><div id="rsiChart" aria-label="Relative strength index chart"></div></div>
+          <p class="chart-attribution">
+            Data: <span id="chartDataSource">CoinGecko</span> · TradingView Lightweight Charts™ Copyright © 2025
+            <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView, Inc.</a>
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/lightweight-charts@5.2.1/dist/lightweight-charts.standalone.production.js"></script>
+    <script type="module" src="../js/pages/watchlist.js"></script>
+    <script type="module" src="../js/ui/nav.js"></script>
+    <script type="module" src="/js/ui/site-footer.js"></script>
+    <script type="module" src="/js/ui/cookie-consent.js"></script>
+  </body>
+</html>

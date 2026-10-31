@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070810" />
+    <title>Signals &amp; Alerts | CoinDash</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="signals-page-body dashboard-shell-page">
+    <script>
+      try {
+        if (localStorage.getItem("cointrack.dashboard-sidebar-collapsed.v1") === "true") {
+          document.body.classList.add("dashboard-sidebar-collapsed");
+        }
+      } catch {}
+    </script>
+    <header class="navbar">
+      <a href="/" class="logo">Coin<span>Dash</span></a>
+      <nav class="nav-links" id="primaryNav" aria-label="Main navigation">
+        <a href="/markets">Markets</a>
+        <a href="/trending">Trending</a>
+        <a href="/watchlist">Watchlist</a>
+        <a href="/signals" aria-current="page">Signals</a>
+        <a href="/news">News</a>
+        <div class="auth-nav-links" data-auth-mobile aria-live="polite"></div>
+      </nav>
+      <div class="nav-actions">
+        <span class="auth-nav-status" data-auth-status role="status" aria-live="polite"></span>
+        <label class="signals-header-search" for="signalHeaderSearch">
+          <span class="visually-hidden">Find an asset for an alert</span>
+          <input id="signalHeaderSearch" type="search" placeholder="Find an asset" autocomplete="off" />
+        </label>
+        <div class="auth-nav-actions" data-auth-desktop aria-live="polite"></div>
+        <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-expanded="false" aria-controls="primaryNav" aria-label="Open navigation menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="signals-main dashboard-main">
+      <section class="signals-heading" aria-labelledby="signalsTitle">
+        <div>
+          <p class="section-label">PRICE MONITORING</p>
+          <h1 id="signalsTitle">Signals <span>&amp; Alerts</span></h1>
+          <p>Monitor price levels, create custom alerts, and stay informed when the crypto market moves.</p>
+        </div>
+        <button class="signals-primary-action" type="button" data-open-alert>+ Create Alert</button>
+      </section>
+
+      <section class="signals-overview" aria-label="Alert overview" aria-busy="true">
+        <div><span>Active Alerts</span><strong data-signal-metric="active">—</strong></div>
+        <div><span>Triggered Today</span><strong data-signal-metric="triggered">—</strong></div>
+        <div><span>Watched Assets</span><strong data-signal-metric="assets">—</strong></div>
+        <div><span>Unread Events</span><strong data-signal-metric="unread">—</strong></div>
+      </section>
+
+      <section class="signal-create-panel" id="createAlert" aria-labelledby="createAlertTitle">
+        <div class="signals-section-heading">
+          <div>
+            <p class="section-label">NEW RULE</p>
+            <h2 id="createAlertTitle">Create a price alert</h2>
+          </div>
+          <p>Up to 20 alerts per account</p>
+        </div>
+
+        <form class="signal-create-form" data-signal-form novalidate>
+          <fieldset class="signal-form-step signal-asset-step">
+            <legend><span>01</span> Choose an asset</legend>
+            <label for="alertAssetSearch">Cryptocurrency</label>
+            <div class="signal-asset-picker">
+              <input id="alertAssetSearch" type="search" placeholder="Search Bitcoin, BTC, Ethereum…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="alertAssetOptions" aria-autocomplete="list" required />
+              <input name="coinId" type="hidden" />
+              <div class="signal-asset-options" id="alertAssetOptions" role="listbox" hidden></div>
+            </div>
+            <div class="signal-selected-asset" data-selected-asset hidden></div>
+            <p class="signal-field-error" data-asset-error></p>
+          </fieldset>
+
+          <fieldset class="signal-form-step">
+            <legend><span>02</span> Choose the alert type</legend>
+            <div class="signal-segmented" data-alert-type>
+              <label><input type="radio" name="alertType" value="price" checked /><span>Target price</span></label>
+              <label><input type="radio" name="alertType" value="percentage" /><span>24h change</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="signal-form-step signal-condition-step">
+            <legend><span>03</span> Configure the condition</legend>
+            <label for="signalDirection">Condition
+              <select id="signalDirection" name="direction">
+                <option value="above">At or above</option>
+                <option value="below">At or below</option>
+              </select>
+            </label>
+            <label for="signalThreshold"><span data-threshold-label>Target price (USD)</span>
+              <input id="signalThreshold" name="threshold" type="number" min="0.000000000001" step="any" placeholder="65000" required />
+            </label>
+            <p class="signal-current-reference" data-current-reference>Choose an asset to see its current market value.</p>
+          </fieldset>
+
+          <fieldset class="signal-form-step signal-delivery-step">
+            <legend><span>04</span> Notification delivery</legend>
+            <label><input type="checkbox" checked disabled /> <span><strong>In-app</strong><small>Always enabled for market alerts</small></span></label>
+            <label><input type="checkbox" name="emailAlerts" /> <span><strong>Email</strong><small>Use your CoinDash account email</small></span></label>
+            <label><input type="checkbox" name="telegramAlerts" disabled /> <span><strong>Telegram</strong><small data-telegram-form-status>Link Telegram below to enable delivery</small></span></label>
+          </fieldset>
+
+          <div class="signal-confirmation">
+            <div><span>ALERT SUMMARY</span><strong data-alert-summary>Choose an asset and set a threshold.</strong></div>
+            <p class="auth-feedback" data-signal-feedback role="status" aria-live="polite"></p>
+            <button class="signals-primary-action" type="submit">Create Alert</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="signal-alerts-section" aria-labelledby="activeAlertsTitle">
+        <div class="signals-section-heading signal-list-heading">
+          <div>
+            <p class="section-label">MY ALERTS</p>
+            <h2 id="activeAlertsTitle">Alert rules</h2>
+          </div>
+          <div class="signal-filter" role="group" aria-label="Filter alerts">
+            <button type="button" class="active" data-alert-filter="all" aria-pressed="true">All</button>
+            <button type="button" data-alert-filter="active" aria-pressed="false">Active</button>
+            <button type="button" data-alert-filter="paused" aria-pressed="false">Paused</button>
+          </div>
+        </div>
+        <div class="signal-alert-list-head" aria-hidden="true">
+          <span>Asset</span><span>Condition</span><span>Current</span><span>Status</span><span>Last triggered</span><span>Actions</span>
+        </div>
+        <div class="signal-alert-list" data-alert-list aria-live="polite" aria-busy="true"></div>
+      </section>
+
+      <section class="signal-activity-section" id="recentActivity" aria-labelledby="recentActivityTitle">
+        <div class="signals-section-heading">
+          <div>
+            <p class="section-label">DELIVERY HISTORY</p>
+            <h2 id="recentActivityTitle">Recent alert activity</h2>
+          </div>
+        </div>
+        <div class="signal-activity-list" data-notification-list aria-live="polite" aria-busy="true"></div>
+      </section>
+
+      <section class="signal-settings-section" aria-labelledby="deliverySettingsTitle">
+        <details>
+          <summary id="deliverySettingsTitle">Alert delivery settings</summary>
+          <div>
+            <p>Email delivery applies to your custom rules. Automatic market-feed categories use your linked Telegram account and are off until you opt in.</p>
+            <form class="market-feed-preferences" data-market-feed-form>
+              <fieldset>
+                <legend>Automatic Telegram market feed</legend>
+                <label><input type="checkbox" name="marketPriceMovements" /> <span><strong>Price movements</strong><small>Meaningful five-minute moves, including major accelerations</small></span></label>
+                <label><input type="checkbox" name="marketUnusualVolume" /> <span><strong>Unusual volume</strong><small>24-hour volume above its recent baseline</small></span></label>
+                <label><input type="checkbox" name="marketBreakouts" /> <span><strong>Breakouts</strong><small>Moves beyond the recent one-hour range</small></span></label>
+              </fieldset>
+              <button type="submit">Save market-feed preferences</button>
+              <p class="auth-feedback" data-market-feed-feedback role="status" aria-live="polite"></p>
+            </form>
+            <a href="/settings#preferencesTitle">Manage account preferences →</a>
+          </div>
+        </details>
+        <div class="telegram-link-settings" data-telegram-settings aria-live="polite" aria-busy="true">
+          <div>
+            <p class="section-label">TELEGRAM DELIVERY</p>
+            <h3 data-telegram-title>Checking Telegram connection…</h3>
+            <p data-telegram-description>Loading verified account state.</p>
+          </div>
+          <div class="telegram-link-actions">
+            <button type="button" data-telegram-link>Connect Telegram</button>
+            <button type="button" data-telegram-refresh>Refresh status</button>
+            <button type="button" data-telegram-unlink hidden>Unlink</button>
+          </div>
+          <div class="telegram-link-instructions" data-telegram-instructions hidden></div>
+          <p class="auth-feedback" data-telegram-feedback role="status"></p>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="../js/pages/signals.js"></script>
+    <script type="module" src="../js/ui/nav.js"></script>
+    <script type="module" src="/js/ui/site-footer.js"></script>
+    <script type="module" src="/js/ui/cookie-consent.js"></script>
+  </body>
+</html>

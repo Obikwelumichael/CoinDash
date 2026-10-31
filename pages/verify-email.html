@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070810" />
+    <title>Verify email | CoinDash</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="auth-page auth-page-verification">
+    <main class="auth-shell">
+      <header class="auth-brand">
+        <a class="logo" href="/markets" aria-label="CoinDash home">Coin<span>Dash</span></a>
+        <a class="auth-market-link" href="/markets">Explore markets <span aria-hidden="true">→</span></a>
+      </header>
+      <div class="auth-layout">
+        <aside class="auth-context" aria-label="Email verification information">
+          <p class="section-label">ACCOUNT CONFIRMATION</p>
+          <h2>Keep security messages connected to you.</h2>
+          <p>Email verification confirms the address associated with your CoinDash account. The server decides whether the link is valid.</p>
+          <div class="auth-security-note"><span aria-hidden="true">✓</span><p><strong>Verification is link-bound</strong><small>Invalid and expired links are never treated as successful.</small></p></div>
+        </aside>
+        <section class="auth-card auth-status-card" aria-labelledby="authTitle">
+          <div class="auth-card-header">
+            <p class="section-label">EMAIL VERIFICATION</p>
+            <h1 id="authTitle">Verify your email</h1>
+            <p class="auth-copy">Confirm the email address associated with your CoinDash account.</p>
+          </div>
+          <div class="auth-status-panel" data-account-action="verify" aria-busy="true">
+            <span class="auth-status-icon" aria-hidden="true"></span>
+            <p class="auth-feedback" data-feedback role="status" aria-live="polite">Checking your verification link…</p>
+          </div>
+          <p class="auth-switch"><a href="/login">Return to sign in <span aria-hidden="true">→</span></a></p>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="../js/pages/account-actions.js"></script>
+    <script type="module" src="/js/ui/site-footer.js"></script>
+    <script type="module" src="/js/ui/cookie-consent.js"></script>
+  </body>
+</html>

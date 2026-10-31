@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Trending - CoinDash</title>
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+
+  <body class="trending-page-body dashboard-shell-page">
+    <script>
+      try {
+        if (localStorage.getItem("cointrack.dashboard-sidebar-collapsed.v1") === "true") {
+          document.body.classList.add("dashboard-sidebar-collapsed");
+        }
+      } catch {}
+    </script>
+    <!-- Navigation -->
+    <header class="navbar">
+      <a href="/" class="logo">Coin<span>Dash</span></a>
+
+      <nav class="nav-links" id="primaryNav" aria-label="Main navigation">
+        <a href="/markets">Markets</a>
+        <a href="/trending" aria-current="page">Trending</a>
+        <a href="/watchlist">Watchlist</a>
+        <div class="auth-nav-links" data-auth-mobile aria-live="polite"></div>
+      </nav>
+
+      <div class="nav-actions">
+        <span
+          class="auth-nav-status"
+          data-auth-status
+          role="status"
+          aria-live="polite"
+        ></span>
+        <div class="nav-search" id="navSearch">
+          <button
+            class="search-button"
+            id="navSearchToggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="searchInput"
+            aria-label="Open coin search"
+          >
+            <span>Search</span>
+          </button>
+
+          <input
+            id="searchInput"
+            class="nav-search-input"
+            type="text"
+            placeholder="Search coins..."
+            aria-label="Search cryptocurrencies"
+            autocomplete="off"
+          />
+
+          <button
+            id="clearSearchButton"
+            class="nav-search-clear"
+            type="button"
+            aria-label="Clear search"
+            title="Clear search"
+            hidden
+          >
+            ×
+          </button>
+
+          <div
+            id="searchSuggestions"
+            class="search-suggestions"
+            role="listbox"
+            hidden
+          ></div>
+        </div>
+
+        <div
+          class="auth-nav-actions"
+          data-auth-desktop
+          aria-live="polite"
+        ></div>
+        <button
+          class="mobile-nav-toggle"
+          id="mobileNavToggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="primaryNav"
+          aria-label="Open navigation menu"
+        >
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Trending Page -->
+    <main class="trending-page dashboard-main">
+      <section class="hero trending-hero">
+        <div class="trending-hero-copy">
+          <p class="hero-label">DISCOVERY · LIVE MARKET INTEREST</p>
+          <h1>See what the market is <span>watching.</span></h1>
+          <p class="hero-description">
+            Follow the cryptocurrencies attracting attention now, with live
+            price context and CoinGecko ranked search interest.
+          </p>
+          <div class="trending-hero-status">
+            <p
+              id="trendingDataStatus"
+              data-state="loading"
+              role="status"
+              aria-live="polite"
+            >
+              <span aria-hidden="true"></span>
+              <strong>Loading trending data</strong>
+              <time id="trendingLastUpdated">—</time>
+            </p>
+            <button id="refreshTrending" type="button">
+              <span aria-hidden="true">↻</span> Refresh
+            </button>
+          </div>
+        </div>
+
+        <aside
+          class="trending-hero-guide"
+          aria-label="How to read trending data"
+        >
+          <p>MARKET ATTENTION, EXPLAINED</p>
+          <h2>Interest is a signal not a buy rating.</h2>
+          <ul>
+            <li><span>01</span><strong>Search-interest rank</strong></li>
+            <li><span>02</span><strong>Live 24-hour price context</strong></li>
+            <li><span>03</span><strong>Observed rank movement</strong></li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="coins-section trending-section">
+        <div class="section-heading">
+          <div>
+            <p class="section-label">SEARCH INTEREST</p>
+            <h2>Trending coins</h2>
+            <p class="trending-list-context">
+              Ranked by CoinGecko trending search interest. Price performance is
+              shown separately.
+            </p>
+          </div>
+          <span class="trending-live" id="trendingListStatus"
+            ><i></i> LOADING</span
+          >
+        </div>
+
+        <div class="trending-list-head" aria-hidden="true">
+          <span>Interest rank</span>
+          <span>Coin</span>
+          <span>Price / 24h</span>
+          <span>Market Cap</span>
+          <span>24h Volume</span>
+        </div>
+
+        <div id="trendingCoins">
+          <!-- Trending coins will be rendered here -->
+        </div>
+      </section>
+
+      <section
+        class="coins-section trending-momentum-section"
+        aria-labelledby="trendingMomentumTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="section-label">RANK HISTORY</p>
+            <h2 id="trendingMomentumTitle">Trending Rank Changes</h2>
+          </div>
+        </div>
+        <p class="trending-rank-context">
+          Compares CoinGecko search-interest rankings with the previous
+          successful observation in this browser. It is not a price-momentum
+          signal.
+        </p>
+        <div id="trendingMomentum" aria-live="polite" aria-busy="true">
+          <p class="trending-momentum-message">Collecting rank history...</p>
+        </div>
+      </section>
+
+      <section
+        class="coin-details trending-chart-details"
+        id="trendingCoinDetails"
+        aria-labelledby="trendingChartName"
+      >
+        <div class="details-header">
+          <div>
+            <p id="trendingChartSymbol">COIN</p>
+            <h2 id="trendingChartName">Coin chart</h2>
+          </div>
+          <div class="details-chart-quote" aria-live="polite">
+            <strong id="trendingChartPrice">—</strong>
+            <span id="trendingChartChange">—</span>
+          </div>
+          <button id="closeTrendingChart" type="button">Close chart</button>
+        </div>
+
+        <div class="price-chart">
+          <div class="chart-toolbar">
+            <div class="chart-readout" aria-live="polite">
+              <span><small>O</small><strong id="chartOpen">--</strong></span>
+              <span><small>H</small><strong id="chartHigh">--</strong></span>
+              <span><small>L</small><strong id="chartLow">--</strong></span>
+              <span><small>C</small><strong id="chartClose">--</strong></span>
+            </div>
+            <div
+              class="chart-controls"
+              role="group"
+              aria-label="Chart timeframe"
+            >
+              <button class="chart-range" data-interval="1m" type="button">
+                1m
+              </button>
+              <button class="chart-range" data-interval="5m" type="button">
+                5m
+              </button>
+              <button class="chart-range" data-interval="1h" type="button">
+                1hr
+              </button>
+              <button class="chart-range" data-interval="4h" type="button">
+                4hr
+              </button>
+              <button class="chart-range active" data-days="1" type="button">
+                24H
+              </button>
+              <button class="chart-range" data-days="7" type="button">
+                7D
+              </button>
+              <button class="chart-range" data-days="30" type="button">
+                30D
+              </button>
+              <button class="chart-range" data-days="365" type="button">
+                1Y
+              </button>
+            </div>
+          </div>
+          <p id="chartStatus" aria-live="polite"></p>
+          <div class="chart-price-panel">
+            <div id="priceChart" aria-label="Candlestick price chart"></div>
+          </div>
+          <div class="chart-volume-heading">
+            <span>VOLUME</span><span>USD / USDT</span>
+          </div>
+          <div class="chart-volume-panel">
+            <div id="volumeChart" aria-label="Trading volume chart"></div>
+          </div>
+          <div class="chart-rsi-heading">
+            <span>RSI (14)</span><strong id="rsiValue">--</strong
+            ><span>70 / 30</span>
+          </div>
+          <div class="chart-rsi-panel">
+            <div id="rsiChart" aria-label="Relative strength index chart"></div>
+          </div>
+          <p class="chart-attribution">
+            Data: <span id="chartDataSource">CoinGecko</span> · TradingView
+            Lightweight Charts™ Copyright © 2025
+            <a
+              href="https://www.tradingview.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >TradingView, Inc.</a
+            >
+          </p>
+        </div>
+      </section>
+
+      <section
+        class="coins-section trending-categories-section"
+        aria-labelledby="trendingCategoriesTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="section-label">MARKET INTEREST</p>
+            <h2 id="trendingCategoriesTitle">Trending by Category</h2>
+          </div>
+          <span class="trending-category-note"
+            >MARKET THEMES · COINGECKO DATA</span
+          >
+        </div>
+        <p class="trending-category-context">
+          Explore provider-ranked market themes. These category aggregates do
+          not assign the trending coins above to a category.
+        </p>
+        <div
+          id="trendingCategoryFilters"
+          class="trending-category-filters"
+          aria-label="Filter trending categories"
+        ></div>
+        <div id="trendingCategories" aria-live="polite" aria-busy="true">
+          <p class="trending-category-message">
+            Loading trending categories...
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/lightweight-charts@5.2.1/dist/lightweight-charts.standalone.production.js"></script>
+    <script type="module" src="../js/pages/trending.js"></script>
+    <script type="module" src="../js/ui/nav.js"></script>
+    <script type="module" src="/js/ui/site-footer.js"></script>
+    <script type="module" src="/js/ui/cookie-consent.js"></script>
+  </body>
+</html>

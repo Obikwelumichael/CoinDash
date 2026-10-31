@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070810" />
+    <title>Account settings | CoinDash</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="settings-page">
+    <header class="navbar">
+      <a href="/" class="logo">Coin<span>Dash</span></a>
+      <nav class="nav-links" id="primaryNav" aria-label="Main navigation">
+        <a href="/markets">Markets</a>
+        <a href="/trending">Trending</a>
+        <a href="/watchlist">Watchlist</a>
+        <a href="/signals">Signals</a>
+        <a href="/news">News</a>
+        <div class="auth-nav-links" data-auth-mobile aria-live="polite"></div>
+      </nav>
+      <div class="nav-actions">
+        <span class="auth-nav-status" data-auth-status role="status" aria-live="polite"></span>
+        <div class="auth-nav-actions" data-auth-desktop aria-live="polite"></div>
+        <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-expanded="false" aria-controls="primaryNav" aria-label="Open navigation menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="settings-main">
+      <header class="settings-page-heading">
+        <div>
+          <p class="section-label">YOUR ACCOUNT</p>
+          <h1>Account settings</h1>
+          <p data-page-status role="status" aria-live="polite">Loading your account settings…</p>
+        </div>
+        <a class="settings-back-link" href="/">Back to dashboard <span aria-hidden="true">→</span></a>
+      </header>
+
+      <section class="settings-overview" aria-labelledby="overviewTitle" aria-busy="true">
+        <div class="settings-avatar" data-account-avatar aria-hidden="true">CT</div>
+        <div class="settings-identity">
+          <p class="settings-kicker" id="overviewTitle">ACCOUNT OVERVIEW</p>
+          <strong data-account-name>Loading account…</strong>
+          <span data-email></span>
+        </div>
+        <div class="settings-statuses" aria-label="Account status">
+          <span class="settings-status" data-verification-status>Checking email…</span>
+          <span class="settings-status" data-two-factor-badge>Checking 2FA…</span>
+        </div>
+      </section>
+
+      <div class="settings-layout">
+        <nav class="settings-nav" aria-label="Account settings sections">
+          <a href="#profileTitle" aria-current="location"><span aria-hidden="true">01</span> Profile</a>
+          <a href="#preferencesTitle"><span aria-hidden="true">02</span> Preferences</a>
+          <a href="#securityTitle"><span aria-hidden="true">03</span> Security</a>
+          <a href="#alertsTitle"><span aria-hidden="true">04</span> Notifications</a>
+          <a class="settings-nav-danger" href="#deleteTitle"><span aria-hidden="true">05</span> Danger zone</a>
+        </nav>
+
+        <div class="settings-content">
+          <section class="settings-section" aria-labelledby="profileTitle">
+            <div class="settings-section-heading">
+              <div><p class="settings-kicker">PERSONAL DETAILS</p><h2 id="profileTitle">Profile</h2></div>
+              <p>Choose how your name appears across CoinDash. Your sign-in email cannot be changed here.</p>
+            </div>
+            <form data-settings-form="profile">
+              <label for="settingsDisplayName">Display name
+                <input id="settingsDisplayName" name="displayName" autocomplete="name" minlength="2" maxlength="80" required />
+                <small>Between 2 and 80 characters.</small>
+              </label>
+              <label for="settingsEmail">Email address
+                <input id="settingsEmail" type="email" autocomplete="email" readonly aria-describedby="settingsEmailHelp" />
+                <small id="settingsEmailHelp">Used for signing in and account security messages.</small>
+              </label>
+              <div class="settings-form-actions">
+                <p class="auth-feedback" data-feedback="profile" role="status" aria-live="polite"></p>
+                <button class="settings-primary" type="submit">Save profile</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="settings-section" aria-labelledby="preferencesTitle">
+            <div class="settings-section-heading">
+              <div><p class="settings-kicker">DISPLAY &amp; DELIVERY</p><h2 id="preferencesTitle">Preferences</h2></div>
+              <p>Control this page's appearance and the account-wide email channel for custom alerts.</p>
+            </div>
+            <form data-settings-form="preferences">
+              <label for="settingsTheme">Theme
+                <select id="settingsTheme" name="theme">
+                  <option value="dark">Dark</option><option value="system">Use device setting</option><option value="light">Light</option>
+                </select>
+                <small>Dark is the default. Your saved choice applies across CoinDash.</small>
+              </label>
+              <label class="settings-toggle-row" for="settingsEmailAlerts">
+                <span><strong>Email alert delivery</strong><small>Email me when one of my custom market alerts triggers.</small></span>
+                <input id="settingsEmailAlerts" type="checkbox" name="emailAlerts" />
+              </label>
+              <div class="settings-form-actions">
+                <p class="auth-feedback" data-feedback="preferences" role="status" aria-live="polite"></p>
+                <button class="settings-primary" type="submit">Save preferences</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="settings-section" aria-labelledby="securityTitle">
+            <div class="settings-section-heading">
+              <div><p class="settings-kicker">ACCOUNT PROTECTION</p><h2 id="securityTitle">Security</h2></div>
+              <p>Use a strong password and add an authenticator for an extra verification step.</p>
+            </div>
+
+            <div class="settings-security-block">
+              <div class="settings-subheading">
+                <div><h3>Email verification</h3><p data-email-verification-copy>Checking your verified email status…</p></div>
+                <button class="settings-secondary" type="button" data-verify-email hidden>Send verification email</button>
+              </div>
+              <p class="auth-feedback" data-feedback="verification" role="status" aria-live="polite"></p>
+            </div>
+
+            <div class="settings-security-block">
+              <div class="settings-subheading"><div><h3>Two-factor authentication</h3><p data-two-factor-status>Checking two-factor status…</p></div></div>
+              <div data-two-factor-setup hidden>
+                <p class="settings-meta">Scan this QR code with an authenticator app, then enter its current six-digit code.</p>
+                <img data-two-factor-qr alt="Authenticator setup QR code" />
+                <form data-settings-form="two-factor-confirm">
+                  <label for="setupCode">Authenticator code
+                    <input id="setupCode" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required />
+                  </label>
+                  <div class="settings-form-actions">
+                    <p class="auth-feedback" data-feedback="two-factor" role="status" aria-live="polite"></p>
+                    <button class="settings-primary" type="submit">Enable two-factor authentication</button>
+                  </div>
+                </form>
+              </div>
+              <div class="settings-recovery" data-recovery-codes hidden>
+                <p class="settings-warning">Save these recovery codes now. They are shown only once and each can be used once.</p>
+                <ul data-recovery-list></ul>
+              </div>
+              <form data-settings-form="two-factor-disable" hidden>
+                <div class="settings-fields-grid">
+                  <label for="disableCurrentPassword">Current password
+                    <input id="disableCurrentPassword" name="currentPassword" type="password" autocomplete="current-password" required />
+                  </label>
+                  <label for="disableCode">Authenticator or recovery code
+                    <input id="disableCode" name="code" autocomplete="one-time-code" required />
+                  </label>
+                </div>
+                <div class="settings-form-actions">
+                  <p class="auth-feedback" data-feedback="two-factor-disable" role="status" aria-live="polite"></p>
+                  <button class="settings-danger-button" type="submit">Disable two-factor authentication</button>
+                </div>
+              </form>
+              <form data-settings-form="two-factor-begin" hidden>
+                <label for="setupCurrentPassword">Current password
+                  <input id="setupCurrentPassword" name="currentPassword" type="password" autocomplete="current-password" required />
+                  <small>Required before CoinDash creates authenticator setup details.</small>
+                </label>
+                <div class="settings-form-actions"><span></span><button class="settings-primary" type="submit">Set up two-factor authentication</button></div>
+              </form>
+            </div>
+
+            <div class="settings-security-block">
+              <div class="settings-subheading"><div><h3>Change password</h3><p>Changing your password signs out every active CoinDash session, including this one.</p></div></div>
+              <form data-settings-form="password">
+                <div class="settings-fields-grid">
+                  <label for="currentPassword">Current password
+                    <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required />
+                  </label>
+                  <label for="newPassword">New password
+                    <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required />
+                    <small>Use 12–128 characters.</small>
+                  </label>
+                </div>
+                <label for="passwordReauthCode">Authenticator or recovery code <span class="settings-optional">if 2FA is enabled</span>
+                  <input id="passwordReauthCode" name="code" autocomplete="one-time-code" />
+                </label>
+                <div class="settings-form-actions">
+                  <p class="auth-feedback" data-feedback="password" role="status" aria-live="polite"></p>
+                  <button class="settings-primary" type="submit">Change password</button>
+                </div>
+              </form>
+            </div>
+          </section>
+
+          <section class="settings-section" aria-labelledby="alertsTitle">
+            <div class="settings-section-heading">
+              <div><p class="settings-kicker">NOTIFICATIONS</p><h2 id="alertsTitle">Signals &amp; alerts</h2></div>
+              <p>Automatic Telegram categories stay in the Signals Center so account-wide and signal-specific controls remain distinct.</p>
+            </div>
+            <div class="settings-link-row">
+              <div><strong>Alert rules and delivery</strong><p>Create price rules, manage Telegram, and review real notification history.</p></div>
+              <a class="settings-secondary" href="/signals">Open Signals Center <span aria-hidden="true">→</span></a>
+            </div>
+          </section>
+
+          <section class="settings-section settings-delete" aria-labelledby="deleteTitle">
+            <div class="settings-section-heading">
+              <div><p class="settings-kicker">IRREVERSIBLE ACTION</p><h2 id="deleteTitle">Danger zone</h2></div>
+              <p>Deletion permanently removes your watchlist, preferences, alerts, notifications, recovery codes, and sessions.</p>
+            </div>
+            <form data-settings-form="delete">
+              <div class="settings-fields-grid">
+                <label for="deletePassword">Current password
+                  <input id="deletePassword" name="currentPassword" type="password" autocomplete="current-password" required />
+                </label>
+                <label for="deleteCode"><span class="settings-label-copy">Authenticator or recovery code <span class="settings-optional">if 2FA is enabled</span></span>
+                  <input id="deleteCode" name="code" autocomplete="one-time-code" />
+                </label>
+              </div>
+              <div class="settings-form-actions">
+                <p class="auth-feedback" data-feedback="delete" role="status" aria-live="polite"></p>
+                <button class="settings-danger-button" type="submit">Permanently delete account</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="../js/pages/settings.js"></script>
+    <script type="module" src="/js/ui/nav.js"></script>
+    <script type="module" src="/js/ui/site-footer.js"></script>
+    <script type="module" src="/js/ui/cookie-consent.js"></script>
+  </body>
+</html>

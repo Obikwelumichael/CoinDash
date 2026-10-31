@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070810" />
+    <title>Create account | CoinDash</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body class="auth-page auth-page-signup">
+    <main class="auth-shell">
+      <header class="auth-brand">
+        <a class="logo" href="/markets" aria-label="CoinDash home">Coin<span>Dash</span></a>
+        <a class="auth-market-link" href="/markets">Explore markets <span aria-hidden="true">→</span></a>
+      </header>
+      <div class="auth-layout">
+        <aside class="auth-context" aria-label="CoinDash account benefits">
+          <p class="section-label">YOUR MARKET WORKSPACE</p>
+          <h2>Build a clearer view of the market.</h2>
+          <p>Create one account for the assets you follow, the signals you choose, and the preferences you control.</p>
+          <ul class="auth-trust-list">
+            <li><span aria-hidden="true">01</span><strong>Track selected assets</strong></li>
+            <li><span aria-hidden="true">02</span><strong>Choose your alert preferences</strong></li>
+            <li><span aria-hidden="true">03</span><strong>Protect access with a passphrase</strong></li>
+          </ul>
+        </aside>
+        <section class="auth-card" aria-labelledby="authTitle">
+          <div class="auth-card-header">
+            <p class="section-label">CREATE ACCOUNT</p>
+            <h1 id="authTitle">Build your watchlist</h1>
+            <p class="auth-copy">Set up your personal CoinDash market workspace.</p>
+          </div>
+          <form data-auth-form="register" novalidate>
+            <div class="auth-field">
+              <label for="signupName">Display name</label>
+              <input id="signupName" name="displayName" type="text" autocomplete="name" minlength="2" maxlength="80" aria-describedby="authFeedback" required />
+            </div>
+            <div class="auth-field">
+              <label for="signupEmail">Email address</label>
+              <input id="signupEmail" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="you@example.com" aria-describedby="authFeedback" required />
+            </div>
+            <div class="auth-field">
+              <label for="signupPassword">Password</label>
+              <span class="password-field">
+                <input id="signupPassword" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="passwordGuidance authFeedback" required />
+                <button type="button" data-password-toggle="signupPassword" aria-label="Show password" aria-pressed="false">Show</button>
+              </span>
+              <p id="passwordGuidance" class="password-guidance" aria-live="polite">Use 12–128 characters. A longer passphrase is easier to remember and harder to guess.</p>
+            </div>
+            <div class="auth-field">
+              <label for="confirmPassword">Confirm password</label>
+              <span class="password-field">
+                <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="authFeedback" required />
+                <button type="button" data-password-toggle="confirmPassword" aria-label="Show confirmed password" aria-pressed="false">Show</button>
+              </span>
+            </div>
+            <p id="authFeedback" class="auth-feedback" role="status" aria-live="polite"></p>
+            <button class="login-button auth-submit" type="submit">Create account</button>
+          </form>
+          <p class="auth-legal">By creating an account, you agree to the <a href="/terms">Terms</a> and acknowledge the <a href="/privacy">Privacy Notice</a>.</p>
+          <p class="auth-switch">Already have an account? <a href="/login">Sign in</a></p>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="../js/pages/auth.js"></script>
+    <script type="module" src="/js/ui/site-footer.js"></script>
+    <script type="module" src="/js/ui/cookie-consent.js"></script>
+  </body>
+</html>

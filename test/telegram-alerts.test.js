@@ -1,0 +1,534 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const {
+  TelegramDeliveryError,
+  formatTelegramAlert,
+  sendTelegramMessage,
+  telegramConfig,
+} = require("../server/telegram/adapter");
+const {
+  LINK_TOKEN_TTL_MS,
+  TOKEN_PATTERN,
+  consumeLinkToken,
+  generateLinkToken,
+  hashLinkToken,
+} = require("../server/telegram/linking");
+const { START_MESSAGE, createTelegramWebhookHandler } = require("../server/telegram/routes");
+const {
+  DEFAULT_GLOBAL_MARKET_DELIVERY_LIMIT,
+  DEFAULT_MARKET_DELIVERY_WINDOW_MS,
+  DEFAULT_USER_MARKET_DELIVERY_LIMIT,
+  MAX_ATTEMPTS,
+  createTelegramWorker,
+  retryDelayMs,
+} = require("../server/telegram/worker");
+const { getTelegramOperationalStatus } = require("../server/telegram/operations");
+
+function webhookRequest(body, secret = "test-webhook-secret") {
+  return {
+    body,
+    get(name) {
+      return name.toLowerCase() === "x-telegram-bot-api-secret-token" ? secret : undefined;
+    },
+  };
+}
+
+function webhookResponse() {
+  return {
+    statusCode: 200,
+    body: null,
+    status(code) { this.statusCode = code; return this; },
+    json(body) { this.body = body; return this; },
+  };
+}
+
+function webhookDatabase({ duplicate = false } = {}) {
+  return {
+    async query(sql) {
+      if (sql.startsWith("INSERT INTO telegram_webhook_updates")) {
+        return { rowCount: duplicate ? 0 : 1, rows: duplicate ? [] : [{ update_id: 1 }] };
+      }
+      return { rowCount: 0, rows: [] };
+    },
+  };
+}
+
+test("Telegram link tokens are random, hashable, and expire after ten minutes", () => {
+  const first = generateLinkToken();
+  const second = generateLinkToken();
+  assert.match(first.token, TOKEN_PATTERN);
+  assert.notEqual(first.token, second.token);
+  assert.equal(first.tokenHash, hashLinkToken(first.token));
+  assert.equal(first.tokenHash.includes(first.token), false);
+  const remaining = first.expiresAt.getTime() - Date.now();
+  assert.ok(remaining <= LINK_TOKEN_TTL_MS && remaining > LINK_TOKEN_TTL_MS - 2_000);
+});
+
+test("plain private /start sends instructions without consuming a link token", async () => {
+  const sent = [];
+  let consumed = false;
+  const handler = createTelegramWebhookHandler({
+    database: webhookDatabase(),
+    getConfig: () => ({ webhookSecret: "test-webhook-secret" }),
+    consumeToken: async () => { consumed = true; return { status: "linked" }; },
+    sendMessage: async (message) => { sent.push(message); return { messageId: 1 }; },
+  });
+  const response = webhookResponse();
+  await handler(webhookRequest({
+    update_id: 1,
+    message: { text: "/start", chat: { id: 71, type: "private" }, from: { id: 81 } },
+  }), response);
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.body, { ok: true });
+  assert.equal(consumed, false);
+  assert.deepEqual(sent, [{ chatId: 71, text: START_MESSAGE }]);
+});
+
+test("tokenized /start and /link commands retain the secure consumption flow", async () => {
+  const token = "A".repeat(43);
+  const consumed = [];
+  const sent = [];
+  const handler = createTelegramWebhookHandler({
+    database: webhookDatabase(),
+    getConfig: () => ({ webhookSecret: "test-webhook-secret" }),
+    consumeToken: async (values) => { consumed.push(values); return { status: "linked" }; },
+    sendMessage: async (message) => { sent.push(message); return { messageId: sent.length }; },
+  });
+  await handler(webhookRequest({
+    update_id: 2,
+    message: { text: `/start@CoinDashStageBot ${token}`, chat: { id: 72, type: "private" }, from: { id: 82, username: "first" } },
+  }), webhookResponse());
+  await handler(webhookRequest({
+    update_id: 3,
+    message: { text: `/link@CoinDashStageBot ${token}`, chat: { id: 73, type: "private" }, from: { id: 83, username: "second" } },
+  }), webhookResponse());
+
+  assert.equal(consumed.length, 2);
+  assert.equal(consumed[0].token, token);
+  assert.equal(consumed[1].token, token);
+  assert.equal(sent.length, 2);
+  assert.match(sent[0].text, /now linked/);
+});
+
+test("non-private and duplicate webhook updates never consume linking tokens", async () => {
+  const token = "B".repeat(43);
+  let consumed = 0;
+  let sent = 0;
+  const dependencies = {
+    getConfig: () => ({ webhookSecret: "test-webhook-secret" }),
+    consumeToken: async () => { consumed += 1; return { status: "linked" }; },
+    sendMessage: async () => { sent += 1; return { messageId: 1 }; },
+  };
+  const groupHandler = createTelegramWebhookHandler({ ...dependencies, database: webhookDatabase() });
+  await groupHandler(webhookRequest({
+    update_id: 4,
+    message: { text: `/start ${token}`, chat: { id: -74, type: "group" }, from: { id: 84 } },
+  }), webhookResponse());
+
+  const duplicateHandler = createTelegramWebhookHandler({ ...dependencies, database: webhookDatabase({ duplicate: true }) });
+  await duplicateHandler(webhookRequest({
+    update_id: 4,
+    message: { text: `/start ${token}`, chat: { id: 74, type: "private" }, from: { id: 84 } },
+  }), webhookResponse());
+
+  assert.equal(consumed, 0);
+  assert.equal(sent, 0);
+});
+
+test("invalid and expired Telegram tokens do not create a link", async () => {
+  let connected = false;
+  const invalid = await consumeLinkToken({ token: "invalid", chatId: "75", telegramUserId: "85" }, {
+    connect: async () => { connected = true; },
+  });
+  assert.deepEqual(invalid, { status: "invalid" });
+  assert.equal(connected, false);
+
+  const queries = [];
+  const client = {
+    async query(sql) {
+      queries.push(sql);
+      if (sql.includes("RETURNING attempts")) return { rows: [{ attempts: 1 }] };
+      if (sql.includes("FROM telegram_link_tokens")) return { rows: [], rowCount: 0 };
+      return { rows: [], rowCount: 0 };
+    },
+    release() {},
+  };
+  const expired = await consumeLinkToken({
+    token: "C".repeat(43), chatId: "76", telegramUserId: "86",
+  }, { connect: async () => client });
+  assert.deepEqual(expired, { status: "invalid" });
+  assert.equal(queries.some((sql) => sql.includes("INSERT INTO telegram_links")), false);
+});
+
+test("Telegram alert formatting is plain text and includes the evaluated condition", () => {
+  const text = formatTelegramAlert({
+    coinName: "Bad_[coin](https://evil.example)",
+    coinId: "bad-coin",
+    alertType: "percentage",
+    direction: "below",
+    threshold: -5,
+    observedValue: -6.25,
+    observedAt: "2026-10-22T12:00:00.000Z",
+    appBaseUrl: "https://coindash.example",
+  });
+  assert.match(text, /Bad_\[coin\]\(https:\/\/evil\.example\)/);
+  assert.match(text, /Observed: -6\.25%/);
+  assert.match(text, /Condition: below -5%/);
+  assert.match(text, /https:\/\/coindash\.example\/signals/);
+  assert.ok(text.length <= 4096);
+});
+
+test("Telegram adapter accepts only confirmed Bot API success", async () => {
+  let request;
+  const result = await sendTelegramMessage(
+    { chatId: 123, text: "Safe plain text" },
+    {
+      token: "test-token",
+      fetchImpl: async (url, options) => {
+        request = { url, options };
+        return { ok: true, status: 200, json: async () => ({ ok: true, result: { message_id: 99 } }) };
+      },
+    },
+  );
+  assert.equal(result.messageId, 99);
+  assert.match(request.url, /\/bottest-token\/sendMessage$/);
+  assert.deepEqual(JSON.parse(request.options.body), {
+    chat_id: "123",
+    text: "Safe plain text",
+    disable_web_page_preview: true,
+  });
+});
+
+test("Telegram adapter classifies rate limits, permanent failures, and network failures", async () => {
+  await assert.rejects(
+    sendTelegramMessage({ chatId: 1, text: "x" }, {
+      token: "test",
+      fetchImpl: async () => ({ ok: false, status: 429, json: async () => ({ parameters: { retry_after: 17 } }) }),
+    }),
+    (error) => error instanceof TelegramDeliveryError && error.transient && error.retryAfterSeconds === 17,
+  );
+  await assert.rejects(
+    sendTelegramMessage({ chatId: 1, text: "x" }, {
+      token: "test",
+      fetchImpl: async () => ({ ok: false, status: 403, json: async () => ({}) }),
+    }),
+    (error) => error.code === "bot_blocked" && !error.transient,
+  );
+  await assert.rejects(
+    sendTelegramMessage({ chatId: 1, text: "x" }, { token: "test", fetchImpl: async () => { throw new Error("timeout"); } }),
+    (error) => error.code === "network_error" && error.transient,
+  );
+});
+
+test("Telegram retry policy honors retry_after and remains bounded", () => {
+  assert.equal(MAX_ATTEMPTS, 5);
+  assert.equal(retryDelayMs(1), 30_000);
+  assert.equal(retryDelayMs(99), 1_800_000);
+  assert.equal(retryDelayMs(2, 45), 45_000);
+  assert.equal(retryDelayMs(2, 9_999), 3_600_000);
+});
+
+test("Telegram worker lifecycle is idempotent and cleans up its timer", () => {
+  let created = 0;
+  let cleared = 0;
+  const timer = { unref() {} };
+  const worker = createTelegramWorker({
+    database: {},
+    enabled: true,
+    setIntervalFn: () => { created += 1; return timer; },
+    clearIntervalFn: (value) => { assert.equal(value, timer); cleared += 1; },
+  });
+  assert.equal(worker.start(), true);
+  assert.equal(worker.start(), false);
+  assert.equal(worker.stop(), true);
+  assert.equal(worker.stop(), false);
+  assert.equal(created, 1);
+  assert.equal(cleared, 1);
+});
+
+test("Telegram worker cannot start when explicitly disabled", () => {
+  let created = 0;
+  const worker = createTelegramWorker({
+    database: {},
+    enabled: false,
+    setIntervalFn: () => {
+      created += 1;
+      return { unref() {} };
+    },
+    clearIntervalFn: () => {},
+  });
+
+  assert.equal(worker.start(), false);
+  assert.equal(worker.getStatus().lifecycle, "stopped");
+  assert.equal(created, 0);
+});
+
+test("Telegram worker prevents overlapping database cycles", async () => {
+  let release;
+  let calls = 0;
+  const database = {
+    query: async () => {
+      calls += 1;
+      if (calls > 1) return { rowCount: 0, rows: [] };
+      return new Promise((resolve) => { release = () => resolve({ rowCount: 0, rows: [] }); });
+    },
+  };
+  const worker = createTelegramWorker({ database });
+  const first = worker.runOnce();
+  assert.deepEqual(await worker.runOnce(), { status: "skipped_overlap", processed: 0 });
+  release();
+  assert.deepEqual(await first, { status: "completed", processed: 0 });
+});
+
+test("Telegram worker leaves expiry cleanup to maintenance and cancels category-ineligible signals before claiming", async () => {
+  const queries = [];
+  const database = {
+    async query(sql) {
+      queries.push(sql);
+      return { rowCount: 0, rows: [] };
+    },
+  };
+  const worker = createTelegramWorker({ database });
+  assert.deepEqual(await worker.runOnce(), { status: "completed", processed: 0 });
+  assert.equal(queries.some((sql) => sql.includes("expired_market_signal")), false);
+  assert.equal(queries.some((sql) => sql.includes("link_or_preference_removed") && sql.includes("preferenceKey")), true);
+  assert.equal(queries.some((sql) => sql.includes("WITH rate_lock AS") && sql.includes("preferenceKey") && sql.includes("expiresAt")), true);
+});
+
+test("Telegram worker reserves global and per-user market-feed rate limits while prioritizing major events", async () => {
+  let claim;
+  const database = {
+    async query(sql, params) {
+      if (sql.includes("WITH rate_lock AS")) claim = { sql, params };
+      return { rowCount: 0, rows: [] };
+    },
+  };
+  const worker = createTelegramWorker({ database });
+  assert.deepEqual(await worker.runOnce(), { status: "completed", processed: 0 });
+  assert.match(claim.sql, /pg_advisory_xact_lock/);
+  assert.match(claim.sql, /market_position/);
+  assert.match(claim.sql, /user_market_position/);
+  assert.match(claim.sql, /severityClass' = 'major'/);
+  assert.match(claim.sql, /status IN \('processing', 'sent'\)/);
+  assert.deepEqual(claim.params.slice(1), [
+    DEFAULT_MARKET_DELIVERY_WINDOW_MS,
+    DEFAULT_GLOBAL_MARKET_DELIVERY_LIMIT,
+    DEFAULT_USER_MARKET_DELIVERY_LIMIT,
+  ]);
+});
+
+test("Telegram configuration validation is strict and never returns invalid secrets", (t) => {
+  const previous = {
+    token: process.env.TELEGRAM_BOT_TOKEN,
+    username: process.env.TELEGRAM_BOT_USERNAME,
+    secret: process.env.TELEGRAM_WEBHOOK_SECRET,
+    disabled: process.env.TELEGRAM_WORKER_DISABLED,
+  };
+  t.after(() => {
+    for (const [name, value] of Object.entries({
+      TELEGRAM_BOT_TOKEN: previous.token,
+      TELEGRAM_BOT_USERNAME: previous.username,
+      TELEGRAM_WEBHOOK_SECRET: previous.secret,
+      TELEGRAM_WORKER_DISABLED: previous.disabled,
+    })) {
+      if (value === undefined) delete process.env[name]; else process.env[name] = value;
+    }
+  });
+  process.env.TELEGRAM_BOT_TOKEN = "bad-token";
+  process.env.TELEGRAM_BOT_USERNAME = "@bad";
+  process.env.TELEGRAM_WEBHOOK_SECRET = "short";
+  process.env.TELEGRAM_WORKER_DISABLED = "sometimes";
+  const invalid = telegramConfig();
+  assert.equal(invalid.configured, false);
+  assert.equal(invalid.token, null);
+  assert.equal(invalid.webhookSecret, null);
+  assert.deepEqual(invalid.issues, [
+    "invalid_bot_token", "invalid_bot_username", "invalid_webhook_secret", "invalid_worker_disabled_flag",
+  ]);
+
+  process.env.TELEGRAM_BOT_TOKEN = `123456789:${"A".repeat(35)}`;
+  process.env.TELEGRAM_BOT_USERNAME = "CoinDashStageBot";
+  process.env.TELEGRAM_WEBHOOK_SECRET = "stage_webhook_secret_123456789012345";
+  process.env.TELEGRAM_WORKER_DISABLED = "false";
+  const valid = telegramConfig();
+  assert.equal(valid.configured, true);
+  assert.equal(valid.issues.length, 0);
+});
+
+test("operational aggregation reports backlog, failures, configuration, and worker state", async (t) => {
+  const previous = {
+    token: process.env.TELEGRAM_BOT_TOKEN,
+    username: process.env.TELEGRAM_BOT_USERNAME,
+    secret: process.env.TELEGRAM_WEBHOOK_SECRET,
+  };
+  t.after(() => {
+    for (const [name, value] of Object.entries({
+      TELEGRAM_BOT_TOKEN: previous.token,
+      TELEGRAM_BOT_USERNAME: previous.username,
+      TELEGRAM_WEBHOOK_SECRET: previous.secret,
+    })) {
+      if (value === undefined) delete process.env[name]; else process.env[name] = value;
+    }
+  });
+  process.env.TELEGRAM_BOT_TOKEN = `123456789:${"B".repeat(35)}`;
+  process.env.TELEGRAM_BOT_USERNAME = "CoinDashStageBot";
+  process.env.TELEGRAM_WEBHOOK_SECRET = "stage_webhook_secret_123456789012345";
+  const database = {
+    calls: 0,
+    async query() {
+      this.calls += 1;
+      if (this.calls === 1) return { rows: [{
+        pending: 4, eligible_retries: 1, failed: 2, ambiguous: 1,
+        sent_24h: 8, failed_24h: 3, oldest_pending_seconds: 420,
+      }] };
+      return { rows: [{ code: "rate_limited", count: 2 }] };
+    },
+  };
+  const status = await getTelegramOperationalStatus({
+    database,
+    worker: { getStatus: () => ({ lifecycle: "running", cycleRunning: false, lastCycleAt: null, lastCycleStatus: "completed" }) },
+  });
+  assert.equal(status.application, "ok");
+  assert.equal(status.postgres, "ok");
+  assert.equal(status.telegram.health, "degraded");
+  assert.equal(status.telegram.deliveries.pending, 4);
+  assert.equal(status.telegram.deliveries.ambiguous, 1);
+  assert.deepEqual(status.telegram.deliveries.recentFailureCategories, [{ code: "rate_limited", count: 2 }]);
+});
+
+test("a database failure after Telegram acceptance leaves the job recoverable as ambiguous", async () => {
+  const queries = [];
+  let errors = 0;
+  const database = {
+    async query(sql) {
+      queries.push(sql);
+      if (sql.includes("WITH rate_lock AS")) return { rowCount: 1, rows: [{ id: "delivery" }] };
+      if (sql.includes("SELECT d.id, d.notification_id")) {
+        return { rowCount: 1, rows: [{ id: "delivery", notification_id: "notification", attempts: 1, payload: {} }] };
+      }
+      if (sql.includes("SELECT l.chat_id")) return { rowCount: 1, rows: [{ chat_id: "123" }] };
+      if (sql.includes("SET send_started_at")) return { rowCount: 1, rows: [{ id: "delivery" }] };
+      if (sql.includes("SET status = 'sent'")) throw new Error("controlled database outage");
+      return { rowCount: 0, rows: [] };
+    },
+  };
+  const worker = createTelegramWorker({
+    database,
+    deliver: async () => ({ messageId: 5 }),
+    onError: () => { errors += 1; },
+  });
+  assert.deepEqual(await worker.runOnce(), { status: "completed", processed: 1 });
+  assert.equal(errors, 1);
+  assert.equal(queries.some((sql) => sql.includes("status = 'failed'") && sql.includes("WHERE id = $1")), false);
+  assert.equal(queries.some((sql) => sql.includes("status = 'ambiguous'") && sql.includes("send_started_at IS NOT NULL")), true);
+});
+
+test("unlinking before send cancels a claimed job without calling Telegram", async () => {
+  let delivered = false;
+  const database = {
+    async query(sql) {
+      if (sql.includes("WITH rate_lock AS")) return { rowCount: 1, rows: [{ id: "delivery" }] };
+      if (sql.includes("SELECT d.id, d.notification_id")) {
+        return { rowCount: 1, rows: [{ id: "delivery", notification_id: "notification", attempts: 1, payload: {} }] };
+      }
+      if (sql.includes("SELECT l.chat_id")) return { rowCount: 0, rows: [] };
+      return { rowCount: 1, rows: [] };
+    },
+  };
+  const worker = createTelegramWorker({ database, deliver: async () => { delivered = true; } });
+  assert.deepEqual(await worker.runOnce(), { status: "completed", processed: 1 });
+  assert.equal(delivered, false);
+});
+
+test("worker shutdown can await an in-flight cycle", async () => {
+  let release;
+  const database = {
+    calls: 0,
+    async query() {
+      this.calls += 1;
+      if (this.calls > 1) return { rowCount: 0, rows: [] };
+      return new Promise((resolve) => { release = () => resolve({ rowCount: 0, rows: [] }); });
+    },
+  };
+  const worker = createTelegramWorker({ database });
+  const cycle = worker.runOnce();
+  let idle = false;
+  const waiting = worker.whenIdle().then(() => { idle = true; });
+  await Promise.resolve();
+  assert.equal(idle, false);
+  release();
+  await cycle;
+  await waiting;
+  assert.equal(idle, true);
+});
+
+const { requireOperator } = require("../server/telegram/operations");
+
+function operatorMiddlewareResponse() {
+  return {
+    statusCode: 200,
+    body: null,
+    status(code) { this.statusCode = code; return this; },
+    json(body) { this.body = body; return this; },
+  };
+}
+
+test("operator diagnostics return 503 when OPERATIONS_TOKEN is not configured", (t) => {
+  const previous = process.env.OPERATIONS_TOKEN;
+  t.after(() => {
+    if (previous === undefined) delete process.env.OPERATIONS_TOKEN;
+    else process.env.OPERATIONS_TOKEN = previous;
+  });
+
+  delete process.env.OPERATIONS_TOKEN;
+  const req = { get: () => "" };
+  const res = operatorMiddlewareResponse();
+  let nextCalled = false;
+
+  requireOperator(req, res, () => { nextCalled = true; });
+
+  assert.equal(res.statusCode, 503);
+  assert.equal(res.body.error, "Operator diagnostics are not configured.");
+  assert.equal(nextCalled, false);
+});
+
+test("operator diagnostics reject missing or incorrect Bearer tokens", (t) => {
+  const previous = process.env.OPERATIONS_TOKEN;
+  t.after(() => {
+    if (previous === undefined) delete process.env.OPERATIONS_TOKEN;
+    else process.env.OPERATIONS_TOKEN = previous;
+  });
+
+  process.env.OPERATIONS_TOKEN = "test-operations-token-123456789012";
+  for (const authorization of ["", "Bearer wrong-token", "Basic test-token"]) {
+    const req = { get: () => authorization };
+    const res = operatorMiddlewareResponse();
+    let nextCalled = false;
+
+    requireOperator(req, res, () => { nextCalled = true; });
+
+    assert.equal(res.statusCode, 401);
+    assert.equal(res.body.error, "Operator authorization is required.");
+    assert.equal(nextCalled, false);
+  }
+});
+
+test("operator diagnostics allow a correct Bearer token", (t) => {
+  const previous = process.env.OPERATIONS_TOKEN;
+  t.after(() => {
+    if (previous === undefined) delete process.env.OPERATIONS_TOKEN;
+    else process.env.OPERATIONS_TOKEN = previous;
+  });
+
+  const token = "test-operations-token-123456789012";
+  process.env.OPERATIONS_TOKEN = token;
+  const req = { get: (name) => name === "authorization" ? `Bearer ${token}` : "" };
+  const res = operatorMiddlewareResponse();
+  let nextCalled = false;
+
+  requireOperator(req, res, () => { nextCalled = true; });
+
+  assert.equal(nextCalled, true);
+  assert.equal(res.statusCode, 200);
+});
