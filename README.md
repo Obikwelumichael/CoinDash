@@ -130,18 +130,6 @@ Telegram staging deployment and operational checks are documented in [docs/teleg
 
 The Markets dashboard provides a live market overview, market breadth, global context, and quick access to the asset table and market movers.
 
-### Trending assets
-
-![CoinDash Trending page](docs/images/trending-page.png)
-
-The Trending page surfaces cryptocurrencies attracting current market attention, with live price context and ranked discovery data.
-
-### Crypto news
-
-![CoinDash Crypto News page](docs/images/news-page.png)
-
-The News page brings together relevant cryptocurrency developments, market context, and links to original publishers.
-
 ## License
 
 This project is licensed under the ISC License. See [package.json](package.json) for the declared license.
