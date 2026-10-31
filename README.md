@@ -124,7 +124,23 @@ Telegram staging deployment and operational checks are documented in [docs/teleg
 
 ## Screenshots
 
-Add screenshots of the Markets dashboard, chart workspace, Signals Center, and Account Settings here when publishing the project.
+### Markets dashboard
+
+![CoinDash Markets dashboard](docs/images/markets-dashboard-hero.png)
+
+The Markets dashboard provides a live market overview, market breadth, global context, and quick access to the asset table and market movers.
+
+### Trending assets
+
+![CoinDash Trending page](docs/images/trending-page.png)
+
+The Trending page surfaces cryptocurrencies attracting current market attention, with live price context and ranked discovery data.
+
+### Crypto news
+
+![CoinDash Crypto News page](docs/images/news-page.png)
+
+The News page brings together relevant cryptocurrency developments, market context, and links to original publishers.
 
 ## License
 
